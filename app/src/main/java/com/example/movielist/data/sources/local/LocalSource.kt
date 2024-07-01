@@ -8,7 +8,6 @@ import com.example.movielist.data.sources.local.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
-import java.util.Date
 
 interface ILocalSource {
     suspend fun getPage(page: Int, category: MovieCategory): List<Movie>
@@ -23,7 +22,7 @@ interface ILocalSource {
 class LocalSource(private val db: AppDatabase) : ILocalSource {
 
     companion object {
-        const val CACHE_TIMEOUT_SECONDS = 4 * 60 * 60;
+        const val CACHE_TIMEOUT_SECONDS = 4 * 60 * 60
     }
 
     override suspend fun getPage(page: Int, category: MovieCategory): List<Movie> =
