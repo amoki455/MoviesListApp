@@ -17,6 +17,8 @@ interface IRemoteSource {
     suspend fun getUpcomingMovies(page: Int): List<Movie>
 
     suspend fun getMovieDetails(id: Int): MovieDetails
+
+    suspend fun searchByKeywords(keywords: String, page: Int): List<Movie>
 }
 
 class RemoteSource(private val apiService: MoviesApiService) : IRemoteSource {
@@ -47,4 +49,9 @@ class RemoteSource(private val apiService: MoviesApiService) : IRemoteSource {
     override suspend fun getMovieDetails(id: Int): MovieDetails = withContext(Dispatchers.IO) {
         apiService.movie(id)
     }
+
+    override suspend fun searchByKeywords(keywords: String, page: Int): List<Movie> =
+        withContext(Dispatchers.IO) {
+            apiService.searchByKeyWords(keywords, page).results
+        }
 }

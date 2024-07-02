@@ -32,4 +32,11 @@ class MoviesRepository(
             return it
         }
     }
+
+    /**
+     * Searching always uses remote source
+     */
+    suspend fun searchByKeywords(keywords: String, page: Int): List<Movie> {
+        return remoteSource.searchByKeywords(keywords, page)
+    }
 }
