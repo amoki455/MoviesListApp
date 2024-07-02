@@ -49,6 +49,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.recyclerview)
     val roomVersion = "2.6.1"
 
     implementation(libs.androidx.core.ktx)

@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">MovieList</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Top Rated</string>
+    <string name="Upcoming">Upcoming</string>
+    <string name="main_title">Movies browser</string>
+    <string name="error">Error</string>
+    <string name="error_io">Network error! Please confirm that you are connected to the internet.</string>
+    <string name="error_parsing_data">Error while processing data.</string>
+    <string name="error_unknwon">Unknown error occurred.</string>
+    <string name="search">Search by a keyword</string>
+    <string name="no_results">No results.</string>
 </resources>

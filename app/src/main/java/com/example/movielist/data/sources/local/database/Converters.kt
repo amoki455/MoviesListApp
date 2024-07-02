@@ -20,7 +20,7 @@ class Converters {
 
     @TypeConverter
     fun fromJsonStringToIntList(string: String): List<Int> {
-        val type = TypeToken.getArray(Int::class.java).type
+        val type = TypeToken.getArray(Integer::class.java).type
         val array: Array<Int> = gson.fromJson(string, type)
         return array.toList()
     }

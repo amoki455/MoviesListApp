@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="blue_200">#81D4FA</color>
+    <color name="primary">#03A9F4</color>
+    <color name="primary_variant">#0288D1</color>
+    <color name="secondary">#FFD165</color>
+    <color name="secondary_variant">#FFAA00</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gold">#FFB300</color>
+    <color name="grey">#4C4C4C</color>
+    <color name="transparentGrey">#804C4C4C</color>
+    <color name="transparentBlue">#B303A9F4</color>
 </resources>

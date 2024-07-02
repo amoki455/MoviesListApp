@@ -3,6 +3,7 @@ package com.example.movielist.data.repositories
 import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.data.models.MovieDetails
+import com.example.movielist.data.models.Keyword
 import com.example.movielist.data.sources.local.ILocalSource
 import com.example.movielist.data.sources.remote.IRemoteSource
 
@@ -20,6 +21,7 @@ class MoviesRepository(
             MovieCategory.POPULAR -> remoteSource.getPopularMovies(page)
             MovieCategory.TOP_RATED -> remoteSource.getTopRatedMovies(page)
             MovieCategory.UPCOMING -> remoteSource.getUpcomingMovies(page)
+            MovieCategory.UNCATEGORIZED -> emptyList()
         }
         localSource.savePage(page, category, remoteData)
         return remoteData
@@ -38,5 +40,9 @@ class MoviesRepository(
      */
     suspend fun searchByKeywords(keywords: String, page: Int): List<Movie> {
         return remoteSource.searchByKeywords(keywords, page)
+    }
+
+    suspend fun findKeywords(text: String): List<Keyword> {
+        return remoteSource.searchForKeywords(text)
     }
 }

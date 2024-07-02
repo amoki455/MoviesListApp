@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="ripple_color" format="color" />
+    <attr name="rounded_corner_bg" format="color" />
+    <attr name="default_text" format="color" />
+    <attr name="secondary_text" format="color" />
+    <attr name="secondary_text_2" format="color" />
+    <attr name="card_background1" format="color" />
+    <attr name="card_background2" format="color" />
+    <attr name="selected_card_background" format="color" />
+    <attr name="background_color" format="color" />
+    <attr name="toolbar_color" format="color" />
+    <attr name="image_placeholder_bg_color" format="color" />
+</resources>

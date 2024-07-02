@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d875699a6091aae0dd8152b809a2ea96",
+    "identityHash": "f78af82dba65114fe0612fb64f206720",
     "entities": [
       {
         "tableName": "cached_page",
@@ -39,7 +39,7 @@
       },
       {
         "tableName": "movie",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `containedPage` INTEGER NOT NULL, `category` TEXT NOT NULL, `backdropPath` TEXT NOT NULL, `genreIds` TEXT NOT NULL, `title` TEXT NOT NULL, `originalTitle` TEXT NOT NULL, `originalLanguage` TEXT NOT NULL, `overview` TEXT NOT NULL, `popularity` REAL NOT NULL, `posterPath` TEXT NOT NULL, `releaseData` TEXT NOT NULL, `isVideo` INTEGER NOT NULL, `isAdult` INTEGER NOT NULL, `voteAverage` REAL NOT NULL, `voteCount` INTEGER NOT NULL, PRIMARY KEY(`id`, `containedPage`, `category`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `containedPage` INTEGER NOT NULL, `category` TEXT NOT NULL, `backdropPath` TEXT, `genreIds` TEXT, `title` TEXT, `originalTitle` TEXT, `originalLanguage` TEXT, `overview` TEXT, `popularity` REAL NOT NULL, `posterPath` TEXT, `releaseData` TEXT, `isVideo` INTEGER NOT NULL, `isAdult` INTEGER NOT NULL, `voteAverage` REAL NOT NULL, `voteCount` INTEGER NOT NULL, PRIMARY KEY(`id`, `containedPage`, `category`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -63,37 +63,37 @@
             "fieldPath": "backdropPath",
             "columnName": "backdropPath",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "genreIds",
             "columnName": "genreIds",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "title",
             "columnName": "title",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "originalTitle",
             "columnName": "originalTitle",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "originalLanguage",
             "columnName": "originalLanguage",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "overview",
             "columnName": "overview",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "popularity",
@@ -105,13 +105,13 @@
             "fieldPath": "posterPath",
             "columnName": "posterPath",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "releaseData",
             "columnName": "releaseData",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "isVideo",
@@ -151,7 +151,7 @@
       },
       {
         "tableName": "movie_details",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `backdropPath` TEXT NOT NULL, `genres` TEXT NOT NULL, `budget` INTEGER NOT NULL, `revenue` INTEGER NOT NULL, `homepage` TEXT NOT NULL, `title` TEXT NOT NULL, `originalTitle` TEXT NOT NULL, `originalLanguage` TEXT NOT NULL, `overview` TEXT NOT NULL, `popularity` REAL NOT NULL, `posterPath` TEXT NOT NULL, `releaseData` TEXT NOT NULL, `isVideo` INTEGER NOT NULL, `isAdult` INTEGER NOT NULL, `voteAverage` REAL NOT NULL, `voteCount` INTEGER NOT NULL, `status` TEXT NOT NULL, `tagline` TEXT NOT NULL, `spokenLanguages` TEXT NOT NULL, `productionCompanies` TEXT NOT NULL, `productionCountries` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `backdropPath` TEXT, `genres` TEXT, `budget` INTEGER NOT NULL, `revenue` INTEGER NOT NULL, `homepage` TEXT, `title` TEXT, `originalTitle` TEXT, `originalLanguage` TEXT, `overview` TEXT, `popularity` REAL NOT NULL, `posterPath` TEXT, `releaseData` TEXT, `isVideo` INTEGER NOT NULL, `isAdult` INTEGER NOT NULL, `voteAverage` REAL NOT NULL, `voteCount` INTEGER NOT NULL, `status` TEXT, `tagline` TEXT, `spokenLanguages` TEXT, `productionCompanies` TEXT, `productionCountries` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -163,13 +163,13 @@
             "fieldPath": "backdropPath",
             "columnName": "backdropPath",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "genres",
             "columnName": "genres",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "budget",
@@ -187,31 +187,31 @@
             "fieldPath": "homepage",
             "columnName": "homepage",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "title",
             "columnName": "title",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "originalTitle",
             "columnName": "originalTitle",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "originalLanguage",
             "columnName": "originalLanguage",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "overview",
             "columnName": "overview",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "popularity",
@@ -223,13 +223,13 @@
             "fieldPath": "posterPath",
             "columnName": "posterPath",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "releaseData",
             "columnName": "releaseData",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "isVideo",
@@ -259,31 +259,31 @@
             "fieldPath": "status",
             "columnName": "status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "tagline",
             "columnName": "tagline",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "spokenLanguages",
             "columnName": "spokenLanguages",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "productionCompanies",
             "columnName": "productionCompanies",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "productionCountries",
             "columnName": "productionCountries",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -299,7 +299,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd875699a6091aae0dd8152b809a2ea96')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f78af82dba65114fe0612fb64f206720')"
     ]
   }
 }
