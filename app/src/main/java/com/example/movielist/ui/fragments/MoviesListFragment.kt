@@ -23,6 +23,7 @@ import com.example.movielist.ui.viewmodels.UpcomingFragmentViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -35,6 +36,8 @@ class MoviesListFragment : Fragment() {
 
     private var category: MovieCategory = MovieCategory.UNCATEGORIZED
     private lateinit var viewModel: BaseListViewModel
+
+    private var errorCollectingJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +61,6 @@ class MoviesListFragment : Fragment() {
             MovieCategory.UPCOMING -> ViewModelProvider(this)[UpcomingFragmentViewModel::class.java]
         }
         observeViewModel()
-        collectErrors()
         return binding.root
     }
 
@@ -88,7 +90,7 @@ class MoviesListFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.items.observe(viewLifecycleOwner, this::updateList)
         viewModel.isLoadingFirstPage.observe(viewLifecycleOwner) {
-            if (it){
+            if (it) {
                 binding.loadingIndicator.visibility = View.VISIBLE
                 binding.noResultsText.visibility = View.GONE
             }
@@ -113,19 +115,21 @@ class MoviesListFragment : Fragment() {
     }
 
     private fun collectErrors() {
-        CoroutineScope(Dispatchers.Default).launch {
-            viewModel.errorEvents.collect {
-                withContext(Dispatchers.Main) {
-                    this@MoviesListFragment.view?.let { v ->
-                        val errorMsg = when (it) {
-                            ErrorType.IO -> getString(R.string.error_io)
-                            ErrorType.JSON_PARSE -> getString(R.string.error_parsing_data)
-                            ErrorType.UNKNOWN -> getString(R.string.error_unknwon)
+        if (errorCollectingJob == null) {
+            errorCollectingJob = CoroutineScope(Dispatchers.Default).launch {
+                viewModel.errorEvents.collect {
+                    withContext(Dispatchers.Main) {
+                        this@MoviesListFragment.view?.let { v ->
+                            val errorMsg = when (it) {
+                                ErrorType.IO -> getString(R.string.error_io)
+                                ErrorType.JSON_PARSE -> getString(R.string.error_parsing_data)
+                                ErrorType.UNKNOWN -> getString(R.string.error_unknwon)
+                            }
+                            MaterialAlertDialogBuilder(v.context)
+                                .setTitle(R.string.error)
+                                .setMessage(errorMsg)
+                                .show()
                         }
-                        MaterialAlertDialogBuilder(v.context)
-                            .setTitle(R.string.error)
-                            .setMessage(errorMsg)
-                            .show()
                     }
                 }
             }
@@ -147,6 +151,13 @@ class MoviesListFragment : Fragment() {
         if (viewModel.items.value?.isEmpty() == true) {
             viewModel.loadNextPage()
         }
+        collectErrors()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        errorCollectingJob?.cancel()
+        errorCollectingJob = null
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
