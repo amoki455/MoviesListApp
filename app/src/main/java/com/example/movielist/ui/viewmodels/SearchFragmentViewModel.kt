@@ -11,6 +11,9 @@ class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
     private val mIsRequestingNewSearch = MutableLiveData(false)
     val isRequestingNewSearch: LiveData<Boolean> = mIsRequestingNewSearch
 
+    /**
+     * should call clearItemsList() and notify remove changes to recycler view before calling this
+      */
     fun submitSearch(text: String) {
         if (mIsRequestingNewSearch.value == true || text.isEmpty())
             return
@@ -23,7 +26,6 @@ class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
             mIsRequestingNewSearch.postValue(true)
             // remove noResults state if it was true to indicate we are trying to get results
             mNoResults.postValue(false)
-            emptyItemsList()
             ThisApp.moviesRepository.findKeywords(text).let {
                 reload(it)
             }
@@ -37,13 +39,11 @@ class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
         }
     }
 
-    private fun emptyItemsList() {
-        mItemsList.clear()
-        mItems.postValue(mItemsList)
+    fun clearItemsList() {
+        mItems.clear()
     }
 
     private fun reload(keywords: List<Keyword>) {
-        emptyItemsList()
         createSearchParam(keywords)
         currentPage = 0
         loadedAllData = false

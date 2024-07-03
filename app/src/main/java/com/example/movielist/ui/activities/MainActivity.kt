@@ -14,13 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
 import com.example.movielist.R
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.databinding.ActivityMainBinding
 import com.example.movielist.ui.fragments.MainFragment
 import com.example.movielist.ui.fragments.MoviesListFragment
-import com.example.movielist.ui.viewmodels.SearchFragmentViewModel
 import com.google.android.material.color.MaterialColors
 
 class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
@@ -35,7 +33,6 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private val binding: ActivityMainBinding
         get() = _binding!!
 
-    private lateinit var searchFragmentViewModel: SearchFragmentViewModel
     private lateinit var backHandler: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +63,6 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             insets
         }
 
-        searchFragmentViewModel = ViewModelProvider(this)[SearchFragmentViewModel::class.java]
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = getString(R.string.main_title)
 
@@ -135,11 +131,18 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
 
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        if (supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) == null) {
+        if (query == null)
+            return true
+
+        var fragment: MoviesListFragment? =
+            supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) as? MoviesListFragment
+
+        if (fragment == null) {
+            fragment = MoviesListFragment.newInstance(MovieCategory.UNCATEGORIZED)
             supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.main_frame,
-                    MoviesListFragment.newInstance(MovieCategory.UNCATEGORIZED),
+                    fragment,
                     SEARCH_FRAGMENT_TAG
                 )
                 .setCustomAnimations(
@@ -153,7 +156,7 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             backHandler.isEnabled = true
             supportActionBar?.title = getString(R.string.search_results)
         }
-        searchFragmentViewModel.submitSearch(query ?: "")
+        fragment.search(query)
         supportActionBar?.subtitle = query
         return true
     }

@@ -12,16 +12,47 @@ abstract class BaseListViewModel(private val category: MovieCategory) : BaseView
     protected var currentPage = 0
     protected var searchParam: String = ""
 
-    protected val mItemsList = mutableListOf<Movie>()
-    protected val mItems = MutableLiveData<List<Movie>>(mItemsList)
-    val items: LiveData<List<Movie>> = mItems
+    protected val mItems = mutableListOf<Movie>()
+    val items: List<Movie> = mItems
 
-    // for te view to re-display the loading indicator when submitting new search query
+    private val mNewItems = MutableLiveData<List<Movie>?>(null)
+    val newItems: LiveData<List<Movie>?> = mNewItems
+
+    // for the view to re-display the loading indicator when submitting new search query
     private val mIsLoadingFirstPage = MutableLiveData(false)
     val isLoadingFirstPage: LiveData<Boolean> = mIsLoadingFirstPage
 
     protected val mNoResults = MutableLiveData(false)
     val noResults: LiveData<Boolean> = mNoResults
+
+    fun consumeNewItems() {
+        mNewItems.value?.let {
+            mItems.addAll(it)
+            if (it.isNotEmpty()) {
+                currentPage += 1
+                // add empty item as loading indicator
+                mItems.add(Movie())
+                if (mNoResults.value == true) {
+                    mNoResults.postValue(false)
+                }
+            } else {
+                loadedAllData = true
+                if (currentPage == 0) {
+                    mNoResults.postValue(true)
+                }
+            }
+            mNewItems.postValue(null)
+        }
+    }
+
+    fun removeLoadingItem(): Int {
+        val i = mItems.size - 1
+        if (mItems.lastOrNull()?.id == 0) {
+            mItems.removeLast()
+            return i
+        }
+        return -1
+    }
 
     fun loadNextPage() {
         if (isRequestingData || loadedAllData) {
@@ -44,49 +75,19 @@ abstract class BaseListViewModel(private val category: MovieCategory) : BaseView
                         searchParam,
                         currentPage + 1
                     ).let {
-                        processNewList(it)
+                        mNewItems.postValue(it)
                     }
                 } else {
-                    handleEmptyResponse()
+                    mNewItems.postValue(emptyList())
                 }
             } else {
                 ThisApp.moviesRepository.getMoviesList(currentPage + 1, category)
                     .let {
-                        processNewList(it)
+                        mNewItems.postValue(it)
                     }
             }
             isRequestingData = false
             mIsLoadingFirstPage.postValue(false)
-        }
-    }
-
-    private fun processNewList(list: List<Movie>) {
-        if (list.isNotEmpty()) {
-            currentPage += 1
-            mItemsList.apply {
-                // remove previous empty item that indicate loading
-                removeIf { item -> item.id == 0 }
-                // add new items to the list
-                addAll(list)
-                // add empty item to indicate loading in RecyclerView
-                add(Movie())
-            }
-            mItems.postValue(mItemsList)
-            if (mNoResults.value == true) {
-                mNoResults.postValue(false)
-            }
-        } else {
-            handleEmptyResponse()
-        }
-    }
-
-    private fun handleEmptyResponse() {
-        // remove previous empty item that indicate loading
-        mItemsList.removeIf { item -> item.id == 0 }
-        mItems.postValue(mItemsList)
-        loadedAllData = true
-        if (currentPage == 0) {
-            mNoResults.postValue(true)
         }
     }
 }

@@ -38,6 +38,7 @@ class MoviesListFragment : Fragment() {
     private lateinit var viewModel: BaseListViewModel
 
     private var errorCollectingJob: Job? = null
+    private var pendingSearchQuery: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,11 +65,8 @@ class MoviesListFragment : Fragment() {
         return binding.root
     }
 
-    private fun updateList(list: List<Movie>) {
-        if (list.isNotEmpty() && binding.loadingIndicator.visibility != View.GONE) {
-            binding.loadingIndicator.visibility = View.GONE
-        }
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         if (binding.list.adapter == null) {
             with(binding.list) {
                 val columnsCount = calculateColumnsCount()
@@ -76,19 +74,43 @@ class MoviesListFragment : Fragment() {
                     columnsCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnsCount)
                 }
-                adapter = MoviesRecyclerViewAdapter(list).apply {
+                adapter = MoviesRecyclerViewAdapter(viewModel.items).apply {
                     onReachedLastItem = {
                         viewModel.loadNextPage()
                     }
                 }
             }
-        } else {
-            binding.list.adapter?.notifyDataSetChanged()
+        }
+        if (pendingSearchQuery.isNotEmpty()) {
+            search(pendingSearchQuery)
+            pendingSearchQuery = ""
+        }
+
+        if (viewModel.items.isNotEmpty()) {
+            binding.loadingIndicator.visibility = View.GONE
+        }
+    }
+
+    private fun onReceiveNewItems(items: List<Movie>?) {
+        if (items == null)
+            return
+
+        binding.loadingIndicator.visibility = View.GONE
+        viewModel.removeLoadingItem().let { index ->
+            if (index != -1)
+                binding.list.adapter?.notifyItemRemoved(index)
+        }
+        viewModel.items.size.let { startPosition ->
+            viewModel.consumeNewItems()
+            if (items.isNotEmpty()) {
+                val count = items.size + 1 // +1 for the loading item
+                binding.list.adapter?.notifyItemRangeInserted(startPosition, count)
+            }
         }
     }
 
     private fun observeViewModel() {
-        viewModel.items.observe(viewLifecycleOwner, this::updateList)
+        viewModel.newItems.observe(viewLifecycleOwner, this::onReceiveNewItems)
         viewModel.isLoadingFirstPage.observe(viewLifecycleOwner) {
             if (it) {
                 binding.loadingIndicator.visibility = View.VISIBLE
@@ -148,7 +170,8 @@ class MoviesListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (viewModel.items.value?.isEmpty() == true) {
+        // exclude UNCATEGORIZED to avoid displaying unintended NoResults message
+        if (viewModel.items.isEmpty() && category != MovieCategory.UNCATEGORIZED) {
             viewModel.loadNextPage()
         }
         collectErrors()
@@ -176,6 +199,26 @@ class MoviesListFragment : Fragment() {
             if (layoutManager == null) {
                 binding.list.layoutManager = LinearLayoutManager(context)
             }
+        }
+    }
+
+    fun search(text: String) {
+        if (category != MovieCategory.UNCATEGORIZED) {
+            throw Exception("A MoviesListFragment with category $category can not call search method")
+        }
+
+        if (!isVisible) {
+            pendingSearchQuery = text
+            return
+        }
+
+        (viewModel as? SearchFragmentViewModel)?.apply {
+            val count = viewModel.items.size
+            clearItemsList()
+            if (count > 0) {
+                binding.list.adapter?.notifyItemRangeRemoved(0, count)
+            }
+            submitSearch(text)
         }
     }
 
