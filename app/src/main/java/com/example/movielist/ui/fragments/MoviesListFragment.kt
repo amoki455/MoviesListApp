@@ -1,5 +1,6 @@
 package com.example.movielist.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.example.movielist.R
 import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.databinding.FragmentMoviesListBinding
+import com.example.movielist.ui.activities.MovieDetailsActivity
 import com.example.movielist.ui.adapters.MoviesRecyclerViewAdapter
 import com.example.movielist.ui.viewmodels.BaseListViewModel
 import com.example.movielist.ui.viewmodels.ErrorType
@@ -77,6 +79,11 @@ class MoviesListFragment : Fragment() {
                 adapter = MoviesRecyclerViewAdapter(viewModel.items).apply {
                     onReachedLastItem = {
                         viewModel.loadNextPage()
+                    }
+                    onItemClick = { item ->
+                        Intent(requireActivity(), MovieDetailsActivity::class.java)
+                            .putExtra(MovieDetailsActivity.MOVIE_ID, item.id)
+                            .let { startActivity(it) }
                     }
                 }
             }

@@ -4,6 +4,7 @@ import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.data.models.MovieDetails
 import com.example.movielist.data.models.Keyword
+import com.example.movielist.data.models.MovieImages
 import com.example.movielist.network.MoviesApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -22,6 +23,8 @@ interface IRemoteSource {
     suspend fun searchByKeywords(keywords: String, page: Int): List<Movie>
 
     suspend fun searchForKeywords(query: String): List<Keyword>
+
+    suspend fun getImages(movieId: Int): MovieImages
 }
 
 class RemoteSource(private val apiService: MoviesApiService) : IRemoteSource {
@@ -62,4 +65,8 @@ class RemoteSource(private val apiService: MoviesApiService) : IRemoteSource {
         withContext(Dispatchers.IO) {
             apiService.queryKeywords(query).results ?: emptyList()
         }
+
+    override suspend fun getImages(movieId: Int): MovieImages = withContext(Dispatchers.IO) {
+        apiService.images(movieId)
+    }
 }

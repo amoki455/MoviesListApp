@@ -1,6 +1,7 @@
 package com.example.movielist.network
 
 import com.example.movielist.data.models.MovieDetails
+import com.example.movielist.data.models.MovieImages
 import com.example.movielist.data.models.responses.KeywordsListResponse
 import com.example.movielist.data.models.responses.MovieListResponse
 import retrofit2.http.GET
@@ -36,4 +37,7 @@ interface MoviesApiService {
         @Query("query") query: String,
         @Query("page") page: Int = 1
     ): KeywordsListResponse
+
+    @GET("movie/{movie_id}/images")
+    suspend fun images(@Path("movie_id")movieId: Int): MovieImages
 }

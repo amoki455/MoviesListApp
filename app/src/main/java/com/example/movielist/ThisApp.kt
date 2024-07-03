@@ -16,6 +16,8 @@ class ThisApp : Application() {
 
         lateinit var moviesRepository: MoviesRepository
             private set
+
+        fun createImageUrl(filepath: String) = "https://image.tmdb.org/t/p/w300/${filepath}"
     }
 
     override fun onCreate() {

@@ -12,4 +12,5 @@
     <string name="search">Search by a keyword</string>
     <string name="no_results">No results.</string>
     <string name="search_results">Search results</string>
+    <string name="overview">Overview</string>
 </resources>

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.bumptech.glide.Glide
 import com.example.movielist.R
+import com.example.movielist.ThisApp
 import com.example.movielist.data.models.Movie
 import com.example.movielist.databinding.MovieBinding
 
@@ -44,10 +45,12 @@ class MoviesRecyclerViewAdapter(
             root.setOnClickListener { onItemClick(item) }
             title.text = item.title
             vote.text = item.voteAverage.toString()
-            Glide.with(this.root)
-                .load("https://image.tmdb.org/t/p/w300/${item.posterPath}")
-                .placeholder(R.drawable.tall_image_placeholder)
-                .into(imageView)
+            item.posterPath?.let {
+                Glide.with(this.root)
+                    .load(ThisApp.createImageUrl(it))
+                    .placeholder(R.drawable.tall_image_placeholder)
+                    .into(imageView)
+            }
         }
 
         if (position == itemCount - 1) {

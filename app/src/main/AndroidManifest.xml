@@ -16,11 +16,15 @@
         android:theme="@style/Theme.MovieList"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activities.MovieDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.MainActivity"
-            android:theme="@style/Theme.MovieList.DarkSearchViewTheme"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.MovieList.DarkSearchViewTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

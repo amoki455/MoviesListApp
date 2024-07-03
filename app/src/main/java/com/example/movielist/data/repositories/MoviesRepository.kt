@@ -4,6 +4,8 @@ import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.data.models.MovieDetails
 import com.example.movielist.data.models.Keyword
+import com.example.movielist.data.models.MovieImage
+import com.example.movielist.data.models.MovieImages
 import com.example.movielist.data.sources.local.ILocalSource
 import com.example.movielist.data.sources.remote.IRemoteSource
 
@@ -33,6 +35,10 @@ class MoviesRepository(
             localSource.saveMovieDetails(it)
             return it
         }
+    }
+
+    suspend fun getMovieImages(movieId: Int): List<MovieImage> {
+        return remoteSource.getImages(movieId).backdrops ?: emptyList()
     }
 
     /**
