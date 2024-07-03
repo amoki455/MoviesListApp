@@ -1,13 +1,13 @@
 package com.example.movielist.ui.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.movielist.R
 import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
@@ -33,7 +33,6 @@ class MoviesListFragment : Fragment() {
     private val binding: FragmentMoviesListBinding
         get() = _binding!!
 
-    private var columnCount = 2
     private var category: MovieCategory = MovieCategory.UNCATEGORIZED
     private lateinit var viewModel: BaseListViewModel
 
@@ -41,7 +40,6 @@ class MoviesListFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
             category = MovieCategory.entries[it.getInt(ARG_CATEGORY)]
         }
     }
@@ -71,9 +69,10 @@ class MoviesListFragment : Fragment() {
 
         if (binding.list.adapter == null) {
             with(binding.list) {
+                val columnsCount = calculateColumnsCount()
                 layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
+                    columnsCount <= 1 -> LinearLayoutManager(context)
+                    else -> GridLayoutManager(context, columnsCount)
                 }
                 adapter = MoviesRecyclerViewAdapter(list).apply {
                     onReachedLastItem = {
@@ -82,12 +81,35 @@ class MoviesListFragment : Fragment() {
                 }
             }
         } else {
-            (binding.list.adapter as? MoviesRecyclerViewAdapter)?.notifyDataSetChanged()
+            binding.list.adapter?.notifyDataSetChanged()
         }
     }
 
     private fun observeViewModel() {
         viewModel.items.observe(viewLifecycleOwner, this::updateList)
+        viewModel.isLoadingFirstPage.observe(viewLifecycleOwner) {
+            if (it){
+                binding.loadingIndicator.visibility = View.VISIBLE
+                binding.noResultsText.visibility = View.GONE
+            }
+        }
+        // for search mode
+        // we are sending two request, the first is to get a list of keywords based on the user input, The second is to search using those keywords.
+        // The following code displays loading indicator for the first mentioned request
+        if (category == MovieCategory.UNCATEGORIZED) {
+            (viewModel as? SearchFragmentViewModel)?.let {
+                it.isRequestingNewSearch.observe(viewLifecycleOwner) { state ->
+                    if (state)
+                        binding.loadingIndicator.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        viewModel.noResults.observe(viewLifecycleOwner) {
+            binding.noResultsText.visibility = if (it) View.VISIBLE else View.GONE
+            if (it)
+                binding.loadingIndicator.visibility = View.GONE
+        }
     }
 
     private fun collectErrors() {
@@ -110,10 +132,39 @@ class MoviesListFragment : Fragment() {
         }
     }
 
+    private fun calculateColumnsCount(): Int {
+        resources.displayMetrics?.let {
+            it.widthPixels.div(it.density).let { widthDp ->
+                val calculatedCount = widthDp.toInt().div(159) // item width in dp
+                return if (calculatedCount > 1) calculatedCount else 1
+            }
+        }
+        return 1
+    }
+
     override fun onStart() {
         super.onStart()
         if (viewModel.items.value?.isEmpty() == true) {
             viewModel.loadNextPage()
+        }
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        // dynamically changing columns count based on available space (for example in landscape mode)
+        val columnsCount = calculateColumnsCount()
+        if (columnsCount > 1) {
+            val layoutManager = (binding.list.layoutManager as? GridLayoutManager)
+            if (layoutManager == null) {
+                binding.list.layoutManager = GridLayoutManager(context, columnsCount)
+            } else {
+                layoutManager.spanCount = columnsCount
+            }
+        } else {
+            val layoutManager = (binding.list.layoutManager as? LinearLayoutManager)
+            if (layoutManager == null) {
+                binding.list.layoutManager = LinearLayoutManager(context)
+            }
         }
     }
 
@@ -124,14 +175,12 @@ class MoviesListFragment : Fragment() {
 
     companion object {
 
-        const val ARG_COLUMN_COUNT = "column-count"
         private const val ARG_CATEGORY = "category"
 
         @JvmStatic
-        fun newInstance(columnCount: Int, category: MovieCategory) =
+        fun newInstance(category: MovieCategory) =
             MoviesListFragment().apply {
                 arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
                     putInt(ARG_CATEGORY, category.ordinal)
                 }
             }

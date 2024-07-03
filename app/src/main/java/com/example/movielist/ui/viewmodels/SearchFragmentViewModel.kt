@@ -21,6 +21,9 @@ class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
             }
         ) {
             mIsRequestingNewSearch.postValue(true)
+            // remove noResults state if it was true to indicate we are trying to get results
+            mNoResults.postValue(false)
+            emptyItemsList()
             ThisApp.moviesRepository.findKeywords(text).let {
                 reload(it)
             }
@@ -29,7 +32,7 @@ class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
     }
 
     private fun createSearchParam(keywords: List<Keyword>) {
-        mSearchParam = keywords.fold("") { acc, keyword ->
+        searchParam = keywords.fold("") { acc, keyword ->
             "${keyword.id}|$acc"
         }
     }
@@ -42,12 +45,8 @@ class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
     private fun reload(keywords: List<Keyword>) {
         emptyItemsList()
         createSearchParam(keywords)
-        mCurrentPage = 0
-        if (keywords.isNotEmpty()) {
-            mLoadedAllData = false
-            loadNextPage()
-        } else {
-            mLoadedAllData = true
-        }
+        currentPage = 0
+        loadedAllData = false
+        loadNextPage()
     }
 }

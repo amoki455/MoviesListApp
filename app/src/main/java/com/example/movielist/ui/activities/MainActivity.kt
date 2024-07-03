@@ -2,10 +2,9 @@ package com.example.movielist.ui.activities
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.ViewGroup
+import android.view.View
 import android.widget.EditText
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
@@ -19,29 +18,43 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.movielist.R
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.databinding.ActivityMainBinding
-import com.example.movielist.ui.adapters.MainActivityPagerAdapter
 import com.example.movielist.ui.fragments.MainFragment
 import com.example.movielist.ui.fragments.MoviesListFragment
 import com.example.movielist.ui.viewmodels.SearchFragmentViewModel
-import com.google.android.material.tabs.TabLayoutMediator
+import com.google.android.material.color.MaterialColors
 
 class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
+
+    companion object {
+        private const val SEARCH_FRAGMENT_TAG = "search-fragment"
+        private const val MAIN_FRAGMENT_TAG = "main-fragment"
+        private const val STATE_SUBTITLE = "state-subtitle"
+    }
 
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding
         get() = _binding!!
 
     private lateinit var searchFragmentViewModel: SearchFragmentViewModel
-    private val SEARCH_FRAGMENT_TAG = "search-fragment"
-    private val MAIN_FRAGMENT_TAG = "main-fragment"
-
     private lateinit var backHandler: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            SystemBarStyle.dark(Color.rgb(34, 34, 43)),
-            SystemBarStyle.dark(Color.rgb(42, 43, 54))
+            SystemBarStyle.dark(
+                MaterialColors.getColor(
+                    this,
+                    R.attr.toolbar_color,
+                    Color.rgb(34, 34, 43)
+                )
+            ),
+            SystemBarStyle.dark(
+                MaterialColors.getColor(
+                    this,
+                    R.attr.background_color,
+                    Color.rgb(42, 43, 54)
+                )
+            )
         )
 
         _binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
@@ -55,22 +68,33 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
 
         searchFragmentViewModel = ViewModelProvider(this)[SearchFragmentViewModel::class.java]
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = getString(R.string.main_title)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frame, MainFragment::class.java, null, MAIN_FRAGMENT_TAG)
-            .setCustomAnimations(
-                android.R.anim.fade_in,
-                android.R.anim.fade_out,
-                android.R.anim.fade_in,
-                android.R.anim.fade_out
-            )
-            .commit()
-
-        backHandler = onBackPressedDispatcher.addCallback(this, false) {
-            Handler(mainLooper).post {
-                supportFragmentManager.popBackStack()
-            }
+        val isBackHandlerEnabled =
+            supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) != null
+        backHandler = onBackPressedDispatcher.addCallback(this, isBackHandlerEnabled) {
+            supportActionBar?.title = getString(R.string.main_title)
+            supportActionBar?.subtitle = ""
+            supportFragmentManager.popBackStack()
             backHandler.isEnabled = false
+        }
+        prepareFragments()
+    }
+
+    private fun prepareFragments() {
+        // add main fragment if there are not any. usually in first start of the activity.
+        if (supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) == null
+            && supportFragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG) == null
+        ) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frame, MainFragment::class.java, null, MAIN_FRAGMENT_TAG)
+                .setCustomAnimations(
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out,
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out
+                )
+                .commit()
         }
     }
 
@@ -81,13 +105,27 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 setOnQueryTextListener(this@MainActivity)
                 isSubmitButtonEnabled = true
                 maxWidth = 1900
-                (findViewById(androidx.appcompat.R.id.search_src_text) as? EditText)?.let { editText ->
-                    editText.setTextColor(Color.WHITE)
-                    editText.setHintTextColor(Color.WHITE)
+                layoutDirection = View.LAYOUT_DIRECTION_LTR
+                (findViewById(androidx.appcompat.R.id.search_src_text) as? EditText)?.apply {
+                    setTextColor(Color.WHITE)
+                    setHintTextColor(Color.WHITE)
                 }
             }
         }
         return true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_SUBTITLE, supportActionBar?.subtitle?.toString())
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if (supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) != null) {
+            supportActionBar?.title = getString(R.string.search_results)
+            supportActionBar?.subtitle = savedInstanceState.getString(STATE_SUBTITLE)
+        }
     }
 
     override fun onDestroy() {
@@ -95,12 +133,13 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         _binding = null
     }
 
+
     override fun onQueryTextSubmit(query: String?): Boolean {
         if (supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) == null) {
             supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.main_frame,
-                    MoviesListFragment.newInstance(2, MovieCategory.UNCATEGORIZED),
+                    MoviesListFragment.newInstance(MovieCategory.UNCATEGORIZED),
                     SEARCH_FRAGMENT_TAG
                 )
                 .setCustomAnimations(
@@ -112,8 +151,10 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 .addToBackStack(null)
                 .commit()
             backHandler.isEnabled = true
+            supportActionBar?.title = getString(R.string.search_results)
         }
         searchFragmentViewModel.submitSearch(query ?: "")
+        supportActionBar?.subtitle = query
         return true
     }
 
