@@ -15,9 +15,16 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.movielist.R
 import com.example.movielist.databinding.ActivityMovieDetailsBinding
 import com.example.movielist.ui.adapters.MovieImagesPagerAdapter
+import com.example.movielist.ui.viewmodels.ErrorType
 import com.example.movielist.ui.viewmodels.MovieDetailsActivityViewModel
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MovieDetailsActivity : AppCompatActivity() {
     companion object {
@@ -29,6 +36,7 @@ class MovieDetailsActivity : AppCompatActivity() {
         get() = _binding!!
 
     private lateinit var viewModel: MovieDetailsActivityViewModel
+    private var errorCollectingJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +73,6 @@ class MovieDetailsActivity : AppCompatActivity() {
         }.attach()
 
         observeViewmodel()
-        viewModel.load(intent?.extras?.getInt(MOVIE_ID) ?: 0)
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -75,6 +82,9 @@ class MovieDetailsActivity : AppCompatActivity() {
         }
 
         viewModel.details.observe(this) {
+            if (it == null)
+                return@observe
+
             binding.collapsingLayout.title = it.title
             binding.averageVoteText.text = it.voteAverage.toString()
             binding.releaseDateText.text = it.releaseData
@@ -90,8 +100,44 @@ class MovieDetailsActivity : AppCompatActivity() {
         }
     }
 
+    private fun collectErrors() {
+        if (errorCollectingJob == null) {
+            errorCollectingJob = CoroutineScope(Dispatchers.Default).launch {
+                viewModel.errorEvents.collect {
+                    withContext(Dispatchers.Main) {
+                        _binding?.root?.let { v ->
+                            val errorMsg = when (it) {
+                                ErrorType.IO -> getString(R.string.error_io)
+                                ErrorType.JSON_PARSE -> getString(R.string.error_parsing_data)
+                                ErrorType.UNKNOWN -> getString(R.string.error_unknwon)
+                            }
+                            MaterialAlertDialogBuilder(v.context)
+                                .setTitle(R.string.error)
+                                .setMessage(errorMsg)
+                                .show()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (viewModel.images.value?.isEmpty() == true || viewModel.details.value == null) {
+            viewModel.load(intent?.extras?.getInt(MOVIE_ID) ?: 0)
+        }
+        collectErrors()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        errorCollectingJob?.cancel()
+        errorCollectingJob = null
     }
 }

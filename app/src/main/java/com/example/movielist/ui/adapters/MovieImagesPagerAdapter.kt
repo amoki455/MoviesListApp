@@ -15,7 +15,7 @@ class MovieImagesPagerAdapter(var images: List<MovieImage>) :
 
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imageView = view.findViewById<ImageView>(R.id.image_view)
+        val imageView: ImageView? = view.findViewById(R.id.image_view)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,9 +30,11 @@ class MovieImagesPagerAdapter(var images: List<MovieImage>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val img = images[position]
-        Glide.with(holder.imageView)
-            .load(ThisApp.createImageUrl(img.filePath.toString()))
-            .placeholder(R.drawable.tall_image_placeholder)
-            .into(holder.imageView)
+        holder.imageView?.let {
+            Glide.with(it)
+                .load(ThisApp.createImageUrl(img.filePath.toString(), 500))
+                .placeholder(R.drawable.tall_image_placeholder)
+                .into(it)
+        }
     }
 }

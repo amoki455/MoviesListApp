@@ -16,8 +16,8 @@ class MovieDetailsActivityViewModel : BaseViewModel() {
     private val mImages = MutableLiveData<List<MovieImage>>(emptyList())
     val images: LiveData<List<MovieImage>> = mImages
 
-    private val mDetails = MutableLiveData<MovieDetails>()
-    val details: LiveData<MovieDetails> = mDetails
+    private val mDetails = MutableLiveData<MovieDetails?>(null)
+    val details: LiveData<MovieDetails?> = mDetails
 
     fun load(movieId: Int) {
         if (mIsLoading.value == true || movieId == 0)
@@ -35,13 +35,14 @@ class MovieDetailsActivityViewModel : BaseViewModel() {
                 viewModelScope.async { ThisApp.moviesRepository.getMovieImages(movieId) }
 
             mDetails.postValue(detailsJob.await())
-            var images = imagesJob.await()
-            mDetails.value?.backdropPath?.let {
-                images = images.toMutableList().apply {
-                    add(0, MovieImage(filePath = it))
-                }
+
+            val images = mutableListOf<MovieImage>()
+            mDetails.value?.posterPath?.let {
+                images.add(MovieImage(filePath = it))
             }
+            images.addAll(imagesJob.await())
             mImages.postValue(images)
+
             mIsLoading.postValue(false)
         }
     }

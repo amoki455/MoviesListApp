@@ -17,7 +17,10 @@ class ThisApp : Application() {
         lateinit var moviesRepository: MoviesRepository
             private set
 
-        fun createImageUrl(filepath: String) = "https://image.tmdb.org/t/p/w300/${filepath}"
+        /**
+         * possible width values is  185 or 300 or 400 or 500
+         */
+        fun createImageUrl(filepath: String, width: Int = 300) = "https://image.tmdb.org/t/p/w$width/${filepath}"
     }
 
     override fun onCreate() {
