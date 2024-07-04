@@ -88,6 +88,15 @@ class MovieDetailsActivity : AppCompatActivity() {
             binding.averageVote.text = it.voteAverage.toString()
             binding.releaseDate.text = it.releaseData
             binding.overview.text = it.overview
+            binding.budget.text = it.budget.toString()
+            binding.revenue.text = it.revenue.toString()
+            it.productionCompanies?.fold("") { acc, prod ->
+                if (prod.name != null) {
+                    "- ${prod.name}\n$acc"
+                } else acc
+            }?.let { prodCompanies ->
+                binding.prodCompanies.text = prodCompanies
+            }
         }
 
         viewModel.images.observe(this) {

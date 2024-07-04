@@ -14,4 +14,7 @@
     <string name="search_results">Search results</string>
     <string name="overview">Overview</string>
     <string name="api_key_error">API key is not found. please consider setting MOVIES_API_KEY environment variable to your key before building the app.</string>
+    <string name="production_companies">Production companies</string>
+    <string name="revenue">Revenue</string>
+    <string name="budget">Budget</string>
 </resources>
