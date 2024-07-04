@@ -13,4 +13,5 @@
     <string name="no_results">No results.</string>
     <string name="search_results">Search results</string>
     <string name="overview">Overview</string>
+    <string name="api_key_error">API key is not found. please consider setting MOVIES_API_KEY environment variable to your key before building the app.</string>
 </resources>

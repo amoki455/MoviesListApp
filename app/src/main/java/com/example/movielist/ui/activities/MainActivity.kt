@@ -14,12 +14,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.movielist.BuildConfig
 import com.example.movielist.R
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.databinding.ActivityMainBinding
 import com.example.movielist.ui.fragments.MainFragment
 import com.example.movielist.ui.fragments.MoviesListFragment
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
 
@@ -78,6 +80,14 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     }
 
     private fun prepareFragments() {
+
+        if (BuildConfig.MOVIES_API_KEY.isEmpty() || BuildConfig.MOVIES_API_KEY == "null") {
+            MaterialAlertDialogBuilder(this)
+                .setMessage(R.string.api_key_error)
+                .show()
+            return
+        }
+
         // add main fragment if there are not any. usually in first start of the activity.
         if (supportFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG) == null
             && supportFragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG) == null
