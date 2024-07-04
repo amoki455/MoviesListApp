@@ -1,31 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:layoutDirection="ltr"
-    android:textDirection="ltr"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/background_color"
     android:fitsSystemWindows="false"
+    android:layoutDirection="ltr"
+    android:textDirection="ltr"
     tools:context=".ui.activities.MovieDetailsActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/collapsingLayout"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layoutDirection="ltr"
-            android:textDirection="ltr"
-            android:layout_height="wrap_content"
-            app:collapsedTitleTextColor="?attr/default_text"
-            app:contentScrim="?attr/toolbar_color"
-            app:expandedTitleTextColor="?attr/default_text"
-            app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
-            app:titleCollapseMode="scale">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -34,18 +27,18 @@
 
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/imagesViewPager"
-                    android:layoutDirection="ltr"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="?attr/toolbar_color"
+                    android:layoutDirection="ltr"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tab_layout"
                     android:layout_width="match_parent"
-                    android:layoutDirection="ltr"
                     android:layout_height="28dp"
                     android:background="#00000000"
+                    android:layoutDirection="ltr"
                     app:layout_constraintBottom_toBottomOf="@+id/imagesViewPager"
                     app:tabIconTint="#B3FFFFFF"
                     app:tabMode="auto">
@@ -54,44 +47,54 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="10dp"
                 android:layoutDirection="ltr"
                 android:textDirection="ltr"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="pin"
-                app:titleTextColor="?attr/default_text" />
+                app:cardBackgroundColor="?attr/card_background1"
+                app:cardElevation="2dp"
+                app:strokeColor="#00000000">
 
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layoutDirection="ltr"
+                    android:orientation="vertical"
+                    android:padding="15dp"
+                    android:textDirection="ltr">
 
-    </com.google.android.material.appbar.AppBarLayout>
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layoutDirection="ltr"
+                        android:textAlignment="textStart"
+                        android:textColor="?attr/default_text"
+                        android:textDirection="ltr"
+                        android:textSize="18sp"
+                        tools:text="Lorem Ipsum is simply dummy text of the printing and typesetting" />
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+                </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layoutDirection="ltr"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
+                android:layoutDirection="ltr"
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layoutDirection="ltr"
-                    android:textDirection="ltr"
                     android:layout_height="90dp"
                     android:layout_marginHorizontal="15dp"
                     android:layout_weight="1"
+                    android:layoutDirection="ltr"
+                    android:textDirection="ltr"
                     app:cardBackgroundColor="?attr/card_background1"
                     app:cardElevation="2dp"
                     app:strokeColor="#00000000">
@@ -101,13 +104,13 @@
                         android:layout_height="match_parent">
 
                         <LinearLayout
-                            android:layoutDirection="ltr"
-                            android:textDirection="ltr"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:layoutDirection="ltr"
                             android:orientation="vertical"
-                            android:padding="5dp">
+                            android:padding="5dp"
+                            android:textDirection="ltr">
 
                             <ImageView
                                 android:layout_width="match_parent"
@@ -118,14 +121,14 @@
                                 app:tint="@color/primary" />
 
                             <TextView
-                                android:id="@+id/release_date_text"
+                                android:id="@+id/release_date"
                                 android:layout_width="match_parent"
                                 android:layout_height="0dp"
                                 android:layout_weight="1"
                                 android:layoutDirection="ltr"
-                                android:textDirection="ltr"
                                 android:textAlignment="center"
                                 android:textColor="?attr/default_text"
+                                android:textDirection="ltr"
                                 android:textSize="18sp"
                                 tools:text="2022-8-23" />
 
@@ -136,11 +139,11 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layoutDirection="ltr"
-                    android:textDirection="ltr"
                     android:layout_height="90dp"
                     android:layout_marginHorizontal="15dp"
                     android:layout_weight="1"
+                    android:layoutDirection="ltr"
+                    android:textDirection="ltr"
                     app:cardBackgroundColor="?attr/card_background1"
                     app:cardElevation="2dp"
                     app:strokeColor="#00000000">
@@ -165,14 +168,14 @@
                                 app:tint="@color/gold" />
 
                             <TextView
-                                android:id="@+id/average_vote_text"
+                                android:id="@+id/average_vote"
                                 android:layout_width="match_parent"
                                 android:layout_height="0dp"
-                                android:layoutDirection="ltr"
-                                android:textDirection="ltr"
                                 android:layout_weight="1"
+                                android:layoutDirection="ltr"
                                 android:textAlignment="center"
                                 android:textColor="?attr/default_text"
+                                android:textDirection="ltr"
                                 android:textSize="18sp"
                                 tools:text="8.256" />
 
@@ -186,40 +189,42 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="10dp"
                 android:layoutDirection="ltr"
                 android:textDirection="ltr"
-                android:layout_margin="10dp"
                 app:cardBackgroundColor="?attr/card_background1"
                 app:cardElevation="2dp"
                 app:strokeColor="#00000000">
 
                 <LinearLayout
-                    android:layoutDirection="ltr"
-                    android:textDirection="ltr"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layoutDirection="ltr"
+                    android:orientation="vertical"
                     android:padding="15dp"
-                    android:orientation="vertical">
+                    android:textDirection="ltr">
 
                     <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layoutDirection="ltr"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/default_text"
-                        android:textSize="23sp"
-                        android:textDirection="ltr"
-                        android:text="@string/overview"/>
-
-                    <TextView
-                        android:id="@+id/overview_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/secondary_text"
-                        android:textSize="15sp"
+                        android:text="@string/overview"
                         android:textAlignment="textStart"
-                        android:layoutDirection="ltr"
+                        android:textColor="?attr/default_text"
                         android:textDirection="ltr"
-                        tools:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries"/>
+                        android:textSize="23sp" />
+
+                    <TextView
+                        android:id="@+id/overview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layoutDirection="ltr"
+                        android:textAlignment="textStart"
+                        android:textColor="?attr/secondary_text"
+                        android:textDirection="ltr"
+                        android:textSize="15sp"
+                        tools:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries" />
 
                 </LinearLayout>
 
@@ -244,4 +249,4 @@
 
     </FrameLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

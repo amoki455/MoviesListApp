@@ -64,7 +64,6 @@ class MovieDetailsActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        setSupportActionBar(binding.toolbar)
         binding.imagesViewPager.adapter =
             MovieImagesPagerAdapter(viewModel.images.value ?: emptyList())
 
@@ -85,10 +84,10 @@ class MovieDetailsActivity : AppCompatActivity() {
             if (it == null)
                 return@observe
 
-            binding.collapsingLayout.title = it.title
-            binding.averageVoteText.text = it.voteAverage.toString()
-            binding.releaseDateText.text = it.releaseData
-            binding.overviewText.text = it.overview
+            binding.title.text = it.title
+            binding.averageVote.text = it.voteAverage.toString()
+            binding.releaseDate.text = it.releaseData
+            binding.overview.text = it.overview
         }
 
         viewModel.images.observe(this) {
