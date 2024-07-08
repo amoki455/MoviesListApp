@@ -4,58 +4,94 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.movielist.ThisApp
-import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.data.models.Keyword
+import com.example.movielist.data.models.Movie
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import java.util.concurrent.CancellationException
 
-class SearchFragmentViewModel : BaseListViewModel(MovieCategory.UNCATEGORIZED) {
+class SearchFragmentViewModel : BaseListViewModel<Movie>() {
 
-    private val mIsRequestingNewSearch = MutableLiveData(false)
-    val isRequestingNewSearch: LiveData<Boolean> = mIsRequestingNewSearch
+    private val mMatchedKeywords = MutableLiveData<List<Keyword>?>(null)
+    val matchedKeywords: LiveData<List<Keyword>?> = mMatchedKeywords
+
+    private val mSelectedKeywords = MutableLiveData<List<Keyword>>(emptyList())
 
     /**
-     * should call clearItemsList() and notify remove changes to recycler view before calling this
+     * Observe this and call clearItemsList and notify remove changes to recycler view adapter then call reload
+     * to reload with the newly selected keyword
      */
-    fun submitSearch(text: String) {
-        if (mIsRequestingNewSearch.value == true || text.isEmpty())
-            return
+    val selectedKeywords: LiveData<List<Keyword>> = mSelectedKeywords
 
+    private val mIsLoadingMatchedKeywords = MutableLiveData(false)
+    val isLoadingMatchedKeywords: LiveData<Boolean> = mIsLoadingMatchedKeywords
+
+    private var matchedKeywordsQueryJob: Deferred<Unit>? = null
+
+    /**
+     * Get available keywords from inputted query.
+     * Call this method every time the text changes in SearchView
+     */
+    fun findKeywords(text: String) {
         runOnScope(
             onFailure = {
-                mIsRequestingNewSearch.postValue(false)
+                mIsLoadingMatchedKeywords.postValue(false)
             }
         ) {
-            mIsRequestingNewSearch.postValue(true)
-            // remove noResults state if it was true to indicate we are trying to get results
-            mNoResults.postValue(false)
+            // This method will be called every time when text changes in the search box so we should delay before each call
+            // and cancel the previous call if there is a new request
 
-            val requests = mutableListOf<Deferred<List<Keyword>>>()
-            requests.add(viewModelScope.async { ThisApp.moviesRepository.findKeywords(text) })
-            text.split(" ").take(5).forEach {
-                requests.add(viewModelScope.async { ThisApp.moviesRepository.findKeywords(it) })
+            if (matchedKeywordsQueryJob?.isActive == true) {
+                matchedKeywordsQueryJob?.cancel(CancellationException("Requested a new query"))
             }
-            reload(requests.awaitAll().flatten())
+            matchedKeywordsQueryJob = viewModelScope.async {
+                delay(300)
+                mIsLoadingMatchedKeywords.postValue(true)
+                val result = ThisApp.moviesRepository.findKeywords(text)
+                mMatchedKeywords.postValue(result)
+                mIsLoadingMatchedKeywords.postValue(false)
+            }
 
-            mIsRequestingNewSearch.postValue(false)
+            try {
+                matchedKeywordsQueryJob?.await()
+            } catch (_: CancellationException) { /*ignored*/ }
         }
     }
 
-    private fun createSearchParam(keywords: List<Keyword>) {
-        searchParam = keywords.fold("") { acc, keyword ->
+    fun selectKeyword(vararg keywords: Keyword) {
+        mSelectedKeywords.postValue(keywords.toList())
+    }
+
+    fun clearMatchedKeywords() {
+        mMatchedKeywords.postValue(emptyList())
+    }
+
+    override fun addLoadingIndicatorItem(items: MutableList<Movie>) {
+        items.add(Movie())
+    }
+
+    override fun isLoadingIndicatorItem(item: Movie): Boolean = item.id == 0
+
+    override suspend fun requestData(page: Int): List<Movie> {
+        val searchParam = createSearchParam()
+        return if (searchParam.isNotEmpty()) {
+            ThisApp.moviesRepository.searchByKeywords(
+                searchParam,
+                page
+            )
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun createSearchParam(): String {
+        val keywords = mSelectedKeywords.value ?: emptyList()
+        if (keywords.isEmpty())
+            return "";
+
+        return keywords.fold("") { acc, keyword ->
             "${keyword.id}|$acc"
         }
-    }
-
-    fun clearItemsList() {
-        mItems.clear()
-    }
-
-    private fun reload(keywords: List<Keyword>) {
-        createSearchParam(keywords)
-        currentPage = 0
-        loadedAllData = false
-        loadNextPage()
     }
 }

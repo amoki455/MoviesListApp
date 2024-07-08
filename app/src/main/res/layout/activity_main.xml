@@ -5,31 +5,101 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/background_color"
     android:layoutDirection="ltr"
     android:textDirection="ltr"
     tools:context=".ui.activities.MainActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/toolbar_color"
-        android:layoutDirection="ltr"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:subtitleTextColor="?attr/secondary_text_2"
-        app:title="@string/main_title"
-        app:titleTextColor="?attr/default_text"
-        tools:subtitle="subtitle goes here">
+        app:layout_constraintTop_toTopOf="parent">
 
-    </com.google.android.material.appbar.MaterialToolbar>
+        <com.google.android.material.search.SearchBar
+            android:id="@+id/searchbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="?attr/searchbar_color"
+            android:hint="@string/search"
+            android:layoutDirection="ltr"
+            android:textAppearance="@style/Theme.MovieList.SearchBarTextAppearance"
+            app:navigationContentDescription="@string/search"
+            app:navigationIconTint="@color/gold" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.google.android.material.search.SearchView
+        android:id="@+id/search_view"
+        style="@style/Theme.MovieList.SearchView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/search_keywords_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:text="@string/search_keywords_info"
+                    android:textAlignment="textStart"
+                    android:textColor="?attr/default_text"
+                    android:textSize="12sp"
+                    android:textStyle="italic" />
+
+                <FrameLayout
+                    android:id="@+id/search_fragment_frame"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/toolbar_color" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/search_suggestions_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/suggestions_loading_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true"
+                    android:progress="30"
+                    android:visibility="gone"
+                    app:indicatorColor="@color/gold"
+                    app:trackColor="@color/grey" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/keywords_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/background_color"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/keyword_item" />
+            </LinearLayout>
+        </RelativeLayout>
+
+    </com.google.android.material.search.SearchView>
 
     <FrameLayout
         android:id="@+id/main_frame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="?attr/background_color"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/appbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

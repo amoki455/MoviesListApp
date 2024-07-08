@@ -8,6 +8,13 @@
         <item name="colorSecondary">@color/secondary_variant</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSurface">#2A2B36</item>
+        <item name="colorOnSurface">#EBEBEB</item>
+
+        <!-- Snackbar -->
+        <item name="snackbarStyle">@style/MaterialSnackbarTheme</item>
+        <item name="snackbarButtonStyle">@style/MaterialSnackbarTextButtonTheme</item>
+        <item name="snackbarTextViewStyle">@style/MaterialSnackbarTextViewTheme</item>
 
         <item name="ripple_color">#FFFFFF</item>
         <item name="rounded_corner_bg">#981F1F1F</item>
@@ -19,6 +26,7 @@
         <item name="selected_card_background">#002442</item>
         <item name="background_color">#2A2B36</item>
         <item name="toolbar_color">#22222B</item>
+        <item name="searchbar_color">#1B1B23</item>
         <item name="image_placeholder_bg_color">#5F5F60</item>
     </style>
 
@@ -27,4 +35,40 @@
     <style name="Theme.MovieList.DarkSearchViewTheme">
         <item name="colorControlNormal">#FFFFFF</item>
     </style>
+
+    <style name="Theme.MovieList.SearchBarTextAppearance" parent="Widget.Material3.SearchBar">
+        <item name="android:textColor">?attr/default_text</item>
+        <item name="android:textColorHint">?attr/secondary_text_2</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="Theme.MovieList.SearchView.Overlay" parent="ThemeOverlay.Material3.Search">
+        <item name="colorControlNormal">#FFFFFF</item>
+    </style>
+
+    <style name="Theme.MovieList.SearchView" parent="Widget.Material3.SearchView">
+        <item name="backgroundTint">?attr/toolbar_color</item>
+        <item name="android:textAppearance">@style/Theme.MovieList.SearchBarTextAppearance</item>
+        <item name="materialThemeOverlay">@style/Theme.MovieList.SearchView.Overlay</item>
+    </style>
+
+
+    <style name="MaterialSnackbarTheme" parent="@style/Widget.Material3.Snackbar">
+         <item name="backgroundTint">@color/gold</item>
+        <item name="actionTextColorAlpha">1.0</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <style name="MaterialSnackbarTextButtonTheme" parent="@style/Widget.Material3.Button.TextButton.Snackbar">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="MaterialSnackbarTextViewTheme" parent="@style/Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:alpha">1.0</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:maxLines">3</item>
+    </style>
+
 </resources>

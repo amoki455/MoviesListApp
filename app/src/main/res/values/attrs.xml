@@ -10,5 +10,6 @@
     <attr name="selected_card_background" format="color" />
     <attr name="background_color" format="color" />
     <attr name="toolbar_color" format="color" />
+    <attr name="searchbar_color" format="color" />
     <attr name="image_placeholder_bg_color" format="color" />
 </resources>

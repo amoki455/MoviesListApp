@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.movielist.R
+import com.example.movielist.data.models.Keyword
 import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.databinding.FragmentMoviesListBinding
@@ -22,7 +23,7 @@ import com.example.movielist.ui.viewmodels.PopularFragmentViewModel
 import com.example.movielist.ui.viewmodels.SearchFragmentViewModel
 import com.example.movielist.ui.viewmodels.TopRatedFragmentViewModel
 import com.example.movielist.ui.viewmodels.UpcomingFragmentViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,10 +38,9 @@ class MoviesListFragment : Fragment() {
         get() = _binding!!
 
     private var category: MovieCategory = MovieCategory.UNCATEGORIZED
-    private lateinit var viewModel: BaseListViewModel
+    private lateinit var viewModel: BaseListViewModel<Movie>
 
     private var errorCollectingJob: Job? = null
-    private var pendingSearchQuery: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,10 +88,6 @@ class MoviesListFragment : Fragment() {
                 }
             }
         }
-        if (pendingSearchQuery.isNotEmpty()) {
-            search(pendingSearchQuery)
-            pendingSearchQuery = ""
-        }
 
         if (viewModel.items.isNotEmpty()) {
             binding.loadingIndicator.visibility = View.GONE
@@ -116,30 +112,43 @@ class MoviesListFragment : Fragment() {
         }
     }
 
+    private fun onLoadingFirstPage(state: Boolean) {
+        if (state) {
+            binding.loadingIndicator.visibility = View.VISIBLE
+            binding.noResultsText.visibility = View.GONE
+        }
+    }
+
+    private fun onNoResults(state: Boolean) {
+        binding.noResultsText.visibility = if (state) View.VISIBLE else View.GONE
+        if (state)
+            binding.loadingIndicator.visibility = View.GONE
+    }
+
+    private fun onSelectedKeywordsChanged(keywords: List<Keyword>) {
+        if(viewModel !is SearchFragmentViewModel || keywords.isEmpty())
+            return
+
+        val itemsCount = viewModel.items.size
+        if (itemsCount > 0) {
+            viewModel.clearItemsList()
+            binding.list.adapter?.notifyItemRangeRemoved(0, itemsCount)
+        }
+        viewModel.reload()
+    }
+
     private fun observeViewModel() {
         viewModel.newItems.observe(viewLifecycleOwner, this::onReceiveNewItems)
-        viewModel.isLoadingFirstPage.observe(viewLifecycleOwner) {
-            if (it) {
-                binding.loadingIndicator.visibility = View.VISIBLE
-                binding.noResultsText.visibility = View.GONE
-            }
-        }
-        // for search mode
-        // we are sending two request, the first is to get a list of keywords based on the user input, The second is to search using those keywords.
-        // The following code displays loading indicator for the first mentioned request
-        if (category == MovieCategory.UNCATEGORIZED) {
-            (viewModel as? SearchFragmentViewModel)?.let {
-                it.isRequestingNewSearch.observe(viewLifecycleOwner) { state ->
-                    if (state)
-                        binding.loadingIndicator.visibility = View.VISIBLE
-                }
-            }
-        }
+        viewModel.isLoadingFirstPage.observe(viewLifecycleOwner, this::onLoadingFirstPage)
+        viewModel.noResults.observe(viewLifecycleOwner, this::onNoResults)
 
-        viewModel.noResults.observe(viewLifecycleOwner) {
-            binding.noResultsText.visibility = if (it) View.VISIBLE else View.GONE
-            if (it)
-                binding.loadingIndicator.visibility = View.GONE
+        if (category == MovieCategory.UNCATEGORIZED) {
+            (viewModel as? SearchFragmentViewModel)?.apply {
+                selectedKeywords.observe(
+                    viewLifecycleOwner,
+                    this@MoviesListFragment::onSelectedKeywordsChanged
+                )
+            }
         }
     }
 
@@ -154,10 +163,7 @@ class MoviesListFragment : Fragment() {
                                 ErrorType.JSON_PARSE -> getString(R.string.error_parsing_data)
                                 ErrorType.UNKNOWN -> getString(R.string.error_unknwon)
                             }
-                            MaterialAlertDialogBuilder(v.context)
-                                .setTitle(R.string.error)
-                                .setMessage(errorMsg)
-                                .show()
+                            Snackbar.make(v, errorMsg, Snackbar.LENGTH_LONG).show()
                         }
                     }
                 }
@@ -206,26 +212,6 @@ class MoviesListFragment : Fragment() {
             if (layoutManager == null) {
                 binding.list.layoutManager = LinearLayoutManager(context)
             }
-        }
-    }
-
-    fun search(text: String) {
-        if (category != MovieCategory.UNCATEGORIZED) {
-            throw Exception("A MoviesListFragment with category $category can not call search method")
-        }
-
-        if (!isVisible) {
-            pendingSearchQuery = text
-            return
-        }
-
-        (viewModel as? SearchFragmentViewModel)?.apply {
-            val count = viewModel.items.size
-            clearItemsList()
-            if (count > 0) {
-                binding.list.adapter?.notifyItemRangeRemoved(0, count)
-            }
-            submitSearch(text)
         }
     }
 

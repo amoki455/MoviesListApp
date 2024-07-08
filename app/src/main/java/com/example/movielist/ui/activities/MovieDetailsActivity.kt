@@ -18,7 +18,7 @@ import com.example.movielist.ui.adapters.MovieImagesPagerAdapter
 import com.example.movielist.ui.viewmodels.ErrorType
 import com.example.movielist.ui.viewmodels.MovieDetailsActivityViewModel
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,10 +119,7 @@ class MovieDetailsActivity : AppCompatActivity() {
                                 ErrorType.JSON_PARSE -> getString(R.string.error_parsing_data)
                                 ErrorType.UNKNOWN -> getString(R.string.error_unknwon)
                             }
-                            MaterialAlertDialogBuilder(v.context)
-                                .setTitle(R.string.error)
-                                .setMessage(errorMsg)
-                                .show()
+                            Snackbar.make(v, errorMsg, Snackbar.LENGTH_LONG).show()
                         }
                     }
                 }

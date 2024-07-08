@@ -2,36 +2,35 @@ package com.example.movielist.ui.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.movielist.ThisApp
-import com.example.movielist.data.models.Movie
-import com.example.movielist.data.models.MovieCategory
 
-abstract class BaseListViewModel(private val category: MovieCategory) : BaseViewModel() {
+abstract class BaseListViewModel<TEntity> : BaseViewModel() {
     private var isRequestingData = false
-    protected var loadedAllData = false
-    protected var currentPage = 0
-    protected var searchParam: String = ""
+    private var loadedAllData = false
+    private var currentPage = 0
 
-    protected val mItems = mutableListOf<Movie>()
-    val items: List<Movie> = mItems
+    private val mItems = mutableListOf<TEntity>()
+    val items: List<TEntity> = mItems
 
-    private val mNewItems = MutableLiveData<List<Movie>?>(null)
-    val newItems: LiveData<List<Movie>?> = mNewItems
+    private val mNewItems = MutableLiveData<List<TEntity>?>(null)
+    val newItems: LiveData<List<TEntity>?> = mNewItems
 
-    // for the view to re-display the loading indicator when submitting new search query
+    // for the view to re-display the loading indicator when reloading
     private val mIsLoadingFirstPage = MutableLiveData(false)
     val isLoadingFirstPage: LiveData<Boolean> = mIsLoadingFirstPage
 
-    protected val mNoResults = MutableLiveData(false)
+    private val mNoResults = MutableLiveData(false)
     val noResults: LiveData<Boolean> = mNoResults
+
+    protected abstract fun addLoadingIndicatorItem(items: MutableList<TEntity>)
+    protected abstract fun isLoadingIndicatorItem(item: TEntity): Boolean
+    protected abstract suspend fun requestData(page: Int): List<TEntity>
 
     fun consumeNewItems() {
         mNewItems.value?.let {
             mItems.addAll(it)
             if (it.isNotEmpty()) {
                 currentPage += 1
-                // add empty item as loading indicator
-                mItems.add(Movie())
+                addLoadingIndicatorItem(mItems)
                 if (mNoResults.value == true) {
                     mNoResults.postValue(false)
                 }
@@ -47,15 +46,17 @@ abstract class BaseListViewModel(private val category: MovieCategory) : BaseView
 
     fun removeLoadingItem(): Int {
         val i = mItems.size - 1
-        if (mItems.lastOrNull()?.id == 0) {
-            mItems.removeLast()
-            return i
+        mItems.lastOrNull()?.let {
+            if (isLoadingIndicatorItem(it)) {
+                mItems.removeLast()
+                return i
+            }
         }
         return -1
     }
 
     fun loadNextPage() {
-        if (isRequestingData || loadedAllData) {
+        if (isRequestingData || loadedAllData || !isNewItemsConsumed()) {
             return
         }
 
@@ -69,25 +70,21 @@ abstract class BaseListViewModel(private val category: MovieCategory) : BaseView
             mIsLoadingFirstPage.postValue(currentPage == 0)
             // remove noResults state if it was true to indicate we are trying to get results
             mNoResults.postValue(false)
-            if (category == MovieCategory.UNCATEGORIZED) {
-                if (searchParam.isNotEmpty()) {
-                    ThisApp.moviesRepository.searchByKeywords(
-                        searchParam,
-                        currentPage + 1
-                    ).let {
-                        mNewItems.postValue(it)
-                    }
-                } else {
-                    mNewItems.postValue(emptyList())
-                }
-            } else {
-                ThisApp.moviesRepository.getMoviesList(currentPage + 1, category)
-                    .let {
-                        mNewItems.postValue(it)
-                    }
-            }
+            mNewItems.postValue(requestData(currentPage + 1))
             isRequestingData = false
             mIsLoadingFirstPage.postValue(false)
         }
     }
+
+    fun reload() {
+        currentPage = 0
+        loadedAllData = false
+        loadNextPage()
+    }
+
+    fun clearItemsList() {
+        mItems.clear()
+    }
+
+    private fun isNewItemsConsumed(): Boolean = mNewItems.value == null
 }
