@@ -10,7 +10,7 @@ import com.example.movielist.R
 import com.example.movielist.ThisApp
 import com.example.movielist.data.models.MovieImage
 
-class MovieImagesPagerAdapter(var images: List<MovieImage>) :
+class MovieImagesPagerAdapter(var images: MutableList<MovieImage>) :
     RecyclerView.Adapter<MovieImagesPagerAdapter.ViewHolder>() {
 
 
@@ -33,7 +33,7 @@ class MovieImagesPagerAdapter(var images: List<MovieImage>) :
         holder.imageView?.let {
             Glide.with(it)
                 .load(ThisApp.createImageUrl(img.filePath.toString(), 500))
-                .placeholder(R.drawable.tall_image_placeholder)
+                .placeholder(R.drawable.image_placeholder)
                 .into(it)
         }
     }

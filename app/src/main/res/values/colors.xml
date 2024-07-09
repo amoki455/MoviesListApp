@@ -13,4 +13,7 @@
     <color name="transparentGrey">#804C4C4C</color>
     <color name="transparentBlue">#B303A9F4</color>
     <color name="transparentBlack">#B3000000</color>
+    <color name="dark_blue">#2A2B36</color>
+    <color name="darker_blue">#22222B</color>
+    <color name="darker_blue2">#1B1B23</color>
 </resources>

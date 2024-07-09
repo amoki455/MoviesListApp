@@ -1,9 +1,12 @@
 package com.example.movielist.data.models
 
+import android.os.Parcelable
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 @Entity(tableName = "movie", primaryKeys = ["id", "containedPage", "category"])
+@Parcelize
 data class Movie(
     val id: Int = 0,
     val containedPage: Int = 0,
@@ -21,7 +24,7 @@ data class Movie(
     @SerializedName("adult") val isAdult: Boolean = false,
     @SerializedName("vote_average") val voteAverage: Float = 0f,
     @SerializedName("vote_count") val voteCount: Int = 0,
-)
+): Parcelable
 
 enum class MovieCategory {
     UNCATEGORIZED, NOW_PLAYING, POPULAR, TOP_RATED, UPCOMING

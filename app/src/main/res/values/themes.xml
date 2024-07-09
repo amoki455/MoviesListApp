@@ -16,6 +16,17 @@
         <item name="snackbarButtonStyle">@style/MaterialSnackbarTextButtonTheme</item>
         <item name="snackbarTextViewStyle">@style/MaterialSnackbarTextViewTheme</item>
 
+        <!-- activity transitions-->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@transition/fade</item>
+        <item name="android:windowExitTransition">@transition/fade</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
+
+        <item name="android:windowBackground">@color/dark_blue</item>
+        <item name="android:navigationBarColor">@color/dark_blue</item>
+        <item name="android:statusBarColor">@color/darker_blue</item>
+
         <item name="ripple_color">#FFFFFF</item>
         <item name="rounded_corner_bg">#981F1F1F</item>
         <item name="default_text">#EBEBEB</item>
@@ -24,9 +35,9 @@
         <item name="card_background1">#212121</item>
         <item name="card_background2">#383B3D</item>
         <item name="selected_card_background">#002442</item>
-        <item name="background_color">#2A2B36</item>
-        <item name="toolbar_color">#22222B</item>
-        <item name="searchbar_color">#1B1B23</item>
+        <item name="background_color">@color/dark_blue</item>
+        <item name="toolbar_color">@color/darker_blue</item>
+        <item name="searchbar_color">@color/darker_blue2</item>
         <item name="image_placeholder_bg_color">#5F5F60</item>
     </style>
 

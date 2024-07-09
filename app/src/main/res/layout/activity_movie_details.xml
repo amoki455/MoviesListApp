@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:background="?attr/background_color"
     android:fitsSystemWindows="false"
     android:layoutDirection="ltr"
@@ -18,8 +19,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="5dp"
-            android:orientation="vertical">
+            android:animateLayoutChanges="true"
+            android:orientation="vertical"
+            android:paddingBottom="5dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -42,11 +44,29 @@
                     android:layoutDirection="ltr"
                     app:layout_constraintBottom_toBottomOf="@+id/imagesViewPager"
                     app:tabIconTint="#B3FFFFFF"
-                    app:tabMode="auto">
+                    app:tabMode="auto" />
 
-                </com.google.android.material.tabs.TabLayout>
+                <ImageView
+                    android:id="@+id/initial_image"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:contentDescription="@null"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/image_placeholder"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/loadingIndicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                app:indicatorColor="@color/gold"
+                app:trackColor="@color/grey" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -260,11 +280,11 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layoutDirection="ltr"
+                            android:text="@string/budget"
                             android:textAlignment="center"
                             android:textColor="?attr/default_text"
                             android:textDirection="ltr"
-                            android:textSize="22sp"
-                            android:text="@string/budget" />
+                            android:textSize="22sp" />
 
                         <TextView
                             android:id="@+id/budget"
@@ -303,11 +323,11 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layoutDirection="ltr"
+                            android:text="@string/revenue"
                             android:textAlignment="center"
                             android:textColor="?attr/default_text"
                             android:textDirection="ltr"
-                            android:textSize="22sp"
-                            android:text="@string/revenue" />
+                            android:textSize="22sp" />
 
                         <TextView
                             android:id="@+id/revenue"
@@ -375,20 +395,5 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
-    <FrameLayout
-        android:id="@+id/loadingIndicator"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/background_color"
-        android:visibility="gone">
-
-        <com.google.android.material.progressindicator.CircularProgressIndicator
-            android:layout_width="92dp"
-            android:layout_height="92dp"
-            android:layout_gravity="center"
-            android:indeterminate="true" />
-
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

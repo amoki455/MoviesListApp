@@ -1,6 +1,5 @@
 package com.example.movielist.ui.activities
 
-import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,12 +8,8 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.SystemBarStyle
 import androidx.activity.addCallback
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.example.movielist.BuildConfig
@@ -26,7 +21,6 @@ import com.example.movielist.ui.adapters.KeywordsRecyclerViewAdapter
 import com.example.movielist.ui.fragments.MainFragment
 import com.example.movielist.ui.fragments.MoviesListFragment
 import com.example.movielist.ui.viewmodels.SearchFragmentViewModel
-import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.search.SearchView.TransitionState
 
@@ -48,32 +42,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            SystemBarStyle.dark(
-                MaterialColors.getColor(
-                    this,
-                    R.attr.toolbar_color,
-                    Color.rgb(34, 34, 43)
-                )
-            ),
-            SystemBarStyle.dark(
-                MaterialColors.getColor(
-                    this,
-                    R.attr.background_color,
-                    Color.rgb(42, 43, 54)
-                )
-            )
-        )
 
         _binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         searchViewModel = ViewModelProvider(this)[SearchFragmentViewModel::class.java]
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
         setSupportActionBar(binding.searchbar)
 
         if (!checkApiKey()) {

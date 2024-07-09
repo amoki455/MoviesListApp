@@ -4,8 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.movielist.ThisApp
+import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieDetails
 import com.example.movielist.data.models.MovieImage
+import com.example.movielist.data.models.ProductionCompany
 import kotlinx.coroutines.async
 
 class MovieDetailsActivityViewModel : BaseViewModel() {
@@ -19,8 +21,11 @@ class MovieDetailsActivityViewModel : BaseViewModel() {
     private val mDetails = MutableLiveData<MovieDetails?>(null)
     val details: LiveData<MovieDetails?> = mDetails
 
-    fun load(movieId: Int) {
-        if (mIsLoading.value == true || movieId == 0)
+    private val mProductionCompaniesString = MutableLiveData("")
+    val productionCompaniesString: LiveData<String> = mProductionCompaniesString
+
+    fun load(movie: Movie) {
+        if (mIsLoading.value == true || movie.id == 0)
             return
 
         runOnScope(
@@ -30,20 +35,34 @@ class MovieDetailsActivityViewModel : BaseViewModel() {
         ) {
             mIsLoading.postValue(true)
             val detailsJob =
-                viewModelScope.async { ThisApp.moviesRepository.getMovieDetails(movieId) }
+                viewModelScope.async { ThisApp.moviesRepository.getMovieDetails(movie.id) }
             val imagesJob =
-                viewModelScope.async { ThisApp.moviesRepository.getMovieImages(movieId) }
+                viewModelScope.async { ThisApp.moviesRepository.getMovieImages(movie.id) }
 
-            mDetails.postValue(detailsJob.await())
+            val details = detailsJob.await()
+            mDetails.postValue(details)
+            createProductionCompaniesString(details.productionCompanies)
 
-            val images = mutableListOf<MovieImage>()
-            mDetails.value?.posterPath?.let {
-                images.add(MovieImage(filePath = it))
+            val images = mutableListOf<MovieImage>().apply {
+                add(MovieImage(filePath = movie.posterPath))
             }
             images.addAll(imagesJob.await())
             mImages.postValue(images)
 
             mIsLoading.postValue(false)
         }
+    }
+
+    private fun createProductionCompaniesString(productionCompanies: List<ProductionCompany>?) {
+        if (productionCompanies == null)
+            return
+
+        mProductionCompaniesString.postValue(
+            productionCompanies.fold("") { acc, prod ->
+                if (prod.name != null) {
+                    "- ${prod.name}\n$acc"
+                } else acc
+            }.trim('\n')
+        )
     }
 }

@@ -46,7 +46,7 @@ class MoviesRecyclerViewAdapter(
             item.posterPath?.let {
                 Glide.with(this.root)
                     .load(ThisApp.createImageUrl(it))
-                    .placeholder(R.drawable.tall_image_placeholder)
+                    .placeholder(R.drawable.image_placeholder)
                     .into(imageView)
             }
         }

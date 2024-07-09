@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -82,9 +83,15 @@ class MoviesListFragment : Fragment() {
                         viewModel.loadNextPage()
                     }
                     onItemClick = { item ->
-                        Intent(requireActivity(), MovieDetailsActivity::class.java)
-                            .putExtra(MovieDetailsActivity.MOVIE_ID, item.id)
-                            .let { startActivity(it) }
+                        val intent = Intent(requireActivity(), MovieDetailsActivity::class.java)
+                            .putExtra(MovieDetailsActivity.MOVIE, item)
+
+                        startActivity(
+                            intent,
+                            ActivityOptionsCompat
+                                .makeSceneTransitionAnimation(requireActivity())
+                                .toBundle()
+                        )
                     }
                 }
             }
