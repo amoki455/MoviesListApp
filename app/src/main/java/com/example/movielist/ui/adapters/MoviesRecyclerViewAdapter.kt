@@ -4,8 +4,6 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import com.bumptech.glide.Glide
 import com.example.movielist.R
 import com.example.movielist.ThisApp
@@ -14,7 +12,7 @@ import com.example.movielist.databinding.MovieBinding
 
 
 class MoviesRecyclerViewAdapter(
-    private val values: List<Movie>
+    var items: MutableList<Movie>
 ) : RecyclerView.Adapter<MoviesRecyclerViewAdapter.ViewHolder>() {
 
     var onReachedLastItem: () -> Unit = {}
@@ -35,11 +33,11 @@ class MoviesRecyclerViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (values[position].id == 0) 2 else 1
+        return if (items[position].id == 0) 2 else 1
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = values[position]
+        val item = items[position]
 
         holder.binding?.apply {
             root.setOnClickListener { onItemClick(item) }
@@ -58,7 +56,7 @@ class MoviesRecyclerViewAdapter(
         }
     }
 
-    override fun getItemCount(): Int = values.size
+    override fun getItemCount(): Int = items.size
 
     inner class ViewHolder(view: View, val binding: MovieBinding?) :
         RecyclerView.ViewHolder(view)

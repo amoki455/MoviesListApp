@@ -15,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.example.movielist.BuildConfig
 import com.example.movielist.R
@@ -95,6 +96,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSearchView() {
+        val searchBarListener = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val text = s?.toString() ?: ""
+                binding.searchSuggestionsView.isVisible = true
+                searchViewModel.clearItemsList()
+                searchViewModel.findKeywords(text)
+            }
+        }
         with(binding.searchView) {
             setupWithSearchBar(binding.searchbar)
             with(editText) {
@@ -109,7 +120,8 @@ class MainActivity : AppCompatActivity() {
                     false
                 }
                 setOnClickListener {
-                    binding.searchSuggestionsView.visibility = View.VISIBLE
+                    binding.searchSuggestionsView.isVisible = true
+                    searchViewModel.clearItemsList()
                 }
             }
             addTransitionListener { _, _, newState ->
@@ -117,6 +129,8 @@ class MainActivity : AppCompatActivity() {
                     backHandler.isEnabled = true
                 } else if (newState === TransitionState.HIDING) {
                     backHandler.isEnabled = false
+                    // clear last suggestions list
+                    searchViewModel.findKeywords("")
                 }
             }
         }
@@ -144,8 +158,13 @@ class MainActivity : AppCompatActivity() {
     private fun setBackHandler() {
         val isEnabled = binding.searchView.isShowing
         backHandler = onBackPressedDispatcher.addCallback(this, isEnabled) {
-            binding.searchView.hide()
-            backHandler.isEnabled = false
+            if (!binding.searchSuggestionsView.isVisible) {
+                binding.searchSuggestionsView.isVisible = true
+                searchViewModel.clearItemsList()
+            } else {
+                binding.searchView.hide()
+                backHandler.isEnabled = false
+            }
         }
     }
 
@@ -170,7 +189,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchViewModel.isLoadingMatchedKeywords.observe(this) { state ->
-            binding.suggestionsLoadingBar.visibility = if (state) View.VISIBLE else View.GONE
+            binding.suggestionsLoadingBar.isVisible = state
         }
     }
 
@@ -179,24 +198,10 @@ class MainActivity : AppCompatActivity() {
         _binding = null
     }
 
-    private val searchBarListener = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun afterTextChanged(s: Editable?) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            binding.searchSuggestionsView.visibility = View.VISIBLE
-            val text = s?.toString()
-            if (text?.isNotEmpty() == true) {
-                searchViewModel.findKeywords(text)
-            } else {
-                searchViewModel.clearMatchedKeywords()
-            }
-        }
-    }
-
     private fun onSearchSuggestionClick(keyword: Keyword): Boolean {
         getSystemService(InputMethodManager::class.java)
             ?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
-        binding.searchSuggestionsView.visibility = View.GONE
+        binding.searchSuggestionsView.isVisible = false
         searchViewModel.selectKeyword(keyword)
         displayCurrentSearchInfo(listOf(keyword))
         return true
@@ -209,7 +214,7 @@ class MainActivity : AppCompatActivity() {
 
         getSystemService(InputMethodManager::class.java)
             ?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
-        binding.searchSuggestionsView.visibility = View.GONE
+        binding.searchSuggestionsView.isVisible = false
         searchViewModel.selectKeyword(*keywords.toTypedArray())
         displayCurrentSearchInfo(keywords)
     }

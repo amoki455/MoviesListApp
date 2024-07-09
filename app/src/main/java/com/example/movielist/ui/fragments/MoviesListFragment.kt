@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.movielist.R
-import com.example.movielist.data.models.Keyword
 import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieCategory
 import com.example.movielist.databinding.FragmentMoviesListBinding
@@ -76,7 +76,7 @@ class MoviesListFragment : Fragment() {
                     columnsCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnsCount)
                 }
-                adapter = MoviesRecyclerViewAdapter(viewModel.items).apply {
+                adapter = MoviesRecyclerViewAdapter(emptyList<Movie>().toMutableList()).apply {
                     onReachedLastItem = {
                         viewModel.loadNextPage()
                     }
@@ -88,68 +88,55 @@ class MoviesListFragment : Fragment() {
                 }
             }
         }
-
-        if (viewModel.items.isNotEmpty()) {
-            binding.loadingIndicator.visibility = View.GONE
-        }
     }
 
-    private fun onReceiveNewItems(items: List<Movie>?) {
-        if (items == null)
-            return
+    private fun onItemsChanged(newItemsList: List<Movie>) {
+        val adapter = binding.list.adapter as? MoviesRecyclerViewAdapter ?: return
+        var previousCount = adapter.items.size
+        var noResults = false
 
-        binding.loadingIndicator.visibility = View.GONE
-        viewModel.removeLoadingItem().let { index ->
-            if (index != -1)
-                binding.list.adapter?.notifyItemRemoved(index)
-        }
-        viewModel.items.size.let { startPosition ->
-            viewModel.consumeNewItems()
-            if (items.isNotEmpty()) {
-                val count = items.size + 1 // +1 for the loading item
-                binding.list.adapter?.notifyItemRangeInserted(startPosition, count)
+        if (newItemsList.isNotEmpty()) {
+            // Remove loading item
+            if (adapter.items.lastOrNull()?.id == 0) {
+                adapter.items.removeLast()
+                adapter.notifyItemRemoved(previousCount - 1) // Last index
+                previousCount -= 1
             }
+            if (newItemsList.size > previousCount) {
+                // Add new items
+                adapter.items = newItemsList.toMutableList()
+                adapter.items.add(Movie()) // Loading indicator item
+                val countInserted = newItemsList.size - previousCount + 1
+                // PreviousCount value is the start position of the new items
+                adapter.notifyItemRangeInserted(previousCount, countInserted)
+            }
+        } else if (previousCount > 0) {
+            // The new list is empty but the previous list has items, then the list has been cleared.
+            adapter.items.clear()
+            adapter.notifyItemRangeRemoved(0, previousCount)
+        } else {
+            // The new list is empty and No items in the previous,
+            // then this is the first request and it is empty then there is no result
+            noResults = true
         }
+
+        binding.noResultsText.isVisible = noResults
     }
 
-    private fun onLoadingFirstPage(state: Boolean) {
-        if (state) {
-            binding.loadingIndicator.visibility = View.VISIBLE
-            binding.noResultsText.visibility = View.GONE
+    private fun onItemsLoading(state: Boolean) {
+        val adapter = binding.list.adapter as? MoviesRecyclerViewAdapter
+        if (!state) {
+            binding.loadingIndicator.isVisible = false
+        } else {
+            binding.noResultsText.isVisible = false
+            // Show loading indicator only if there are no items, otherwise the last item in the list is treated as a loading item.
+            binding.loadingIndicator.isVisible = adapter?.items?.size == 0
         }
-    }
-
-    private fun onNoResults(state: Boolean) {
-        binding.noResultsText.visibility = if (state) View.VISIBLE else View.GONE
-        if (state)
-            binding.loadingIndicator.visibility = View.GONE
-    }
-
-    private fun onSelectedKeywordsChanged(keywords: List<Keyword>) {
-        if(viewModel !is SearchFragmentViewModel || keywords.isEmpty())
-            return
-
-        val itemsCount = viewModel.items.size
-        if (itemsCount > 0) {
-            viewModel.clearItemsList()
-            binding.list.adapter?.notifyItemRangeRemoved(0, itemsCount)
-        }
-        viewModel.reload()
     }
 
     private fun observeViewModel() {
-        viewModel.newItems.observe(viewLifecycleOwner, this::onReceiveNewItems)
-        viewModel.isLoadingFirstPage.observe(viewLifecycleOwner, this::onLoadingFirstPage)
-        viewModel.noResults.observe(viewLifecycleOwner, this::onNoResults)
-
-        if (category == MovieCategory.UNCATEGORIZED) {
-            (viewModel as? SearchFragmentViewModel)?.apply {
-                selectedKeywords.observe(
-                    viewLifecycleOwner,
-                    this@MoviesListFragment::onSelectedKeywordsChanged
-                )
-            }
-        }
+        viewModel.items.observe(viewLifecycleOwner, this::onItemsChanged)
+        viewModel.isLoading.observe(viewLifecycleOwner, this::onItemsLoading)
     }
 
     private fun collectErrors() {
@@ -184,7 +171,7 @@ class MoviesListFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         // exclude UNCATEGORIZED to avoid displaying unintended NoResults message
-        if (viewModel.items.isEmpty() && category != MovieCategory.UNCATEGORIZED) {
+        if (viewModel.items.value?.isEmpty() == true && category != MovieCategory.UNCATEGORIZED) {
             viewModel.loadNextPage()
         }
         collectErrors()
