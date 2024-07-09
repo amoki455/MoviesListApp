@@ -76,7 +76,8 @@ class MoviesListFragment : Fragment() {
                     columnsCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnsCount)
                 }
-                adapter = MoviesRecyclerViewAdapter(emptyList<Movie>().toMutableList()).apply {
+                val items = viewModel.items.value?.toMutableList() ?: emptyList<Movie>().toMutableList()
+                adapter = MoviesRecyclerViewAdapter(items).apply {
                     onReachedLastItem = {
                         viewModel.loadNextPage()
                     }

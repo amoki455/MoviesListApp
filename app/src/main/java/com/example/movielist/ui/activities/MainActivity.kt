@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var backHandler: OnBackPressedCallback
     private lateinit var searchViewModel: SearchFragmentViewModel
+    private var ignoreSearchViewTextChangeCallback = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,13 +80,21 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        ignoreSearchViewTextChangeCallback = savedInstanceState != null
         setupSearchView()
         setBackHandler()
-        observeSearchSuggestions()
+        observeSearchViewModel()
         prepareFragments()
     }
 
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        backHandler.isEnabled = binding.searchView.isShowing
+        ignoreSearchViewTextChangeCallback = false
+    }
+
     private fun checkApiKey(): Boolean {
+        @Suppress("KotlinConstantConditions")
         if (BuildConfig.MOVIES_API_KEY.isEmpty() || BuildConfig.MOVIES_API_KEY == "null") {
             MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.api_key_error)
@@ -101,9 +110,17 @@ class MainActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val text = s?.toString() ?: ""
-                binding.searchSuggestionsView.isVisible = true
-                searchViewModel.clearItemsList()
-                searchViewModel.findKeywords(text)
+
+                if (ignoreSearchViewTextChangeCallback) {
+                    searchViewModel.findKeywords(text)
+                    return
+                }
+
+                with(searchViewModel) {
+                    hideResults()
+                    showSuggestions()
+                    findKeywords(text)
+                }
             }
         }
         with(binding.searchView) {
@@ -113,15 +130,21 @@ class MainActivity : AppCompatActivity() {
                 textAlignment = View.TEXT_ALIGNMENT_TEXT_START
                 addTextChangedListener(searchBarListener)
                 setOnEditorActionListener { _, actionId, _ ->
-                    if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_NULL) {
-                        onSearchQuerySubmit()
-                        return@setOnEditorActionListener true
+                    when (actionId) {
+                        EditorInfo.IME_ACTION_SEARCH,
+                        EditorInfo.IME_NULL -> {
+                            onSearchQuerySubmit()
+                            return@setOnEditorActionListener true
+                        }
                     }
                     false
                 }
                 setOnClickListener {
-                    binding.searchSuggestionsView.isVisible = true
-                    searchViewModel.clearItemsList()
+                    with(searchViewModel) {
+                        clearItemsList()
+                        hideResults()
+                        showSuggestions()
+                    }
                 }
             }
             addTransitionListener { _, _, newState ->
@@ -134,10 +157,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        val keywords = searchViewModel.matchedKeywords.value?.toMutableList()
+            ?: emptyList<Keyword>().toMutableList()
         binding.keywordsList.adapter =
-            KeywordsRecyclerViewAdapter(emptyList<Keyword>().toMutableList()).apply {
+            KeywordsRecyclerViewAdapter(keywords).apply {
                 onItemClick = { k -> onSearchSuggestionClick(k) }
             }
+
+        with(searchViewModel) {
+            binding.searchSuggestionsView.isVisible = isSuggestionsVisible.value ?: false
+            binding.searchResultsView.isVisible = isResultsVisible.value ?: false
+        }
     }
 
     private fun prepareFragments() {
@@ -158,9 +189,12 @@ class MainActivity : AppCompatActivity() {
     private fun setBackHandler() {
         val isEnabled = binding.searchView.isShowing
         backHandler = onBackPressedDispatcher.addCallback(this, isEnabled) {
-            if (!binding.searchSuggestionsView.isVisible) {
-                binding.searchSuggestionsView.isVisible = true
-                searchViewModel.clearItemsList()
+            if (searchViewModel.isSuggestionsVisible.value == false) {
+                with(searchViewModel) {
+                    clearItemsList()
+                    hideResults()
+                    showSuggestions()
+                }
             } else {
                 binding.searchView.hide()
                 backHandler.isEnabled = false
@@ -168,42 +202,50 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun observeSearchSuggestions() {
-        searchViewModel.matchedKeywords.observe(this) { newList ->
-            if (newList == null)
-                return@observe
-
-            val adapter = binding.keywordsList.adapter as? KeywordsRecyclerViewAdapter
-            adapter?.apply {
-                val previousCount = keywords.size
-                if (newList.isNotEmpty()) {
-                    keywords.addAll(newList)
-                    notifyItemRangeInserted(previousCount, newList.size)
-                    keywords.removeAll(keywords.subList(0, previousCount))
-                    notifyItemRangeRemoved(0, previousCount)
-                } else {
-                    keywords.clear()
-                    notifyItemRangeRemoved(0, previousCount)
-                }
-            }
+    private fun observeSearchViewModel() {
+        searchViewModel.matchedKeywords.observe(this, this::onSearchSuggestionsChanged)
+        searchViewModel.selectedKeywordsNames.observe(this) { names ->
+            binding.searchKeywordsInfo.text = getString(R.string.search_keywords_info, names)
         }
-
-        searchViewModel.isLoadingMatchedKeywords.observe(this) { state ->
-            binding.suggestionsLoadingBar.isVisible = state
+        searchViewModel.isSuggestionsVisible.observe(this) {
+            binding.searchSuggestionsView.visibility = if (it) View.VISIBLE else View.INVISIBLE
+        }
+        searchViewModel.isResultsVisible.observe(this) {
+            binding.searchResultsView.visibility = if (it) View.VISIBLE else View.INVISIBLE
+        }
+        searchViewModel.isLoadingMatchedKeywords.observe(this) {
+            binding.suggestionsLoadingBar.isVisible = it
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
+    private fun onSearchSuggestionsChanged(newList: List<Keyword>?) {
+        if (newList == null)
+            return
+
+        val adapter = binding.keywordsList.adapter as? KeywordsRecyclerViewAdapter
+        adapter?.apply {
+            val previousCount = keywords.size
+            if (newList.isNotEmpty()) {
+                keywords.addAll(newList)
+                notifyItemRangeInserted(previousCount, newList.size)
+                keywords.removeAll(keywords.subList(0, previousCount))
+                notifyItemRangeRemoved(0, previousCount)
+            } else {
+                keywords.clear()
+                notifyItemRangeRemoved(0, previousCount)
+            }
+        }
     }
 
     private fun onSearchSuggestionClick(keyword: Keyword): Boolean {
         getSystemService(InputMethodManager::class.java)
             ?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
-        binding.searchSuggestionsView.isVisible = false
-        searchViewModel.selectKeyword(keyword)
-        displayCurrentSearchInfo(listOf(keyword))
+        with(searchViewModel) {
+            clearItemsList()
+            hideSuggestions()
+            showResults()
+            selectKeyword(keyword)
+        }
         return true
     }
 
@@ -214,15 +256,16 @@ class MainActivity : AppCompatActivity() {
 
         getSystemService(InputMethodManager::class.java)
             ?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
-        binding.searchSuggestionsView.isVisible = false
-        searchViewModel.selectKeyword(*keywords.toTypedArray())
-        displayCurrentSearchInfo(keywords)
+        with(searchViewModel) {
+            clearItemsList()
+            hideSuggestions()
+            showResults()
+            selectKeyword(*keywords.toTypedArray())
+        }
     }
 
-    private fun displayCurrentSearchInfo(keywords: List<Keyword>) {
-        val keywordsText = keywords.fold("") { acc, keyword ->
-            "${keyword.name}, $acc"
-        }
-        binding.searchKeywordsInfo.text = getString(R.string.search_keywords_info, keywordsText)
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }

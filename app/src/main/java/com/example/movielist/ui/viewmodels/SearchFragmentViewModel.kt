@@ -22,6 +22,15 @@ class SearchFragmentViewModel : BaseListViewModel<Movie>() {
     private val mIsLoadingMatchedKeywords = MutableLiveData(false)
     val isLoadingMatchedKeywords: LiveData<Boolean> = mIsLoadingMatchedKeywords
 
+    private val mIsSuggestionsVisible = MutableLiveData(false)
+    val isSuggestionsVisible: LiveData<Boolean> = mIsSuggestionsVisible
+
+    private val mIsResultsVisible = MutableLiveData(false)
+    val isResultsVisible: LiveData<Boolean> = mIsResultsVisible
+
+    private val mSelectedKeywordsNames = MutableLiveData("")
+    val selectedKeywordsNames: LiveData<String> = mSelectedKeywordsNames
+
     /**
      * Get available keywords from inputted query.
      * Call this method every time the text changes in SearchView
@@ -59,8 +68,15 @@ class SearchFragmentViewModel : BaseListViewModel<Movie>() {
     fun selectKeyword(vararg keywords: Keyword) {
         createSearchParam(keywords.toList())
 
-        if (searchParam.isNotEmpty())
+        if (searchParam.isNotEmpty()) {
+            val keywordsNames = keywords.fold("") { acc, keyword ->
+                "${keyword.name}, $acc"
+            }
+            mSelectedKeywordsNames.postValue(keywordsNames)
             reload()
+        } else {
+            mSelectedKeywordsNames.postValue("")
+        }
     }
 
     override suspend fun requestData(page: Int): List<Movie> {
@@ -82,4 +98,9 @@ class SearchFragmentViewModel : BaseListViewModel<Movie>() {
             "${keyword.id}|$acc"
         }
     }
+
+    fun showSuggestions() = mIsSuggestionsVisible.postValue(true)
+    fun hideSuggestions() = mIsSuggestionsVisible.postValue(false)
+    fun showResults() = mIsResultsVisible.postValue(true)
+    fun hideResults() = mIsResultsVisible.postValue(false)
 }
