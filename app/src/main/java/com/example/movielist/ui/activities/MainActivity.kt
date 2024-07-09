@@ -225,11 +225,22 @@ class MainActivity : AppCompatActivity() {
         val adapter = binding.keywordsList.adapter as? KeywordsRecyclerViewAdapter
         adapter?.apply {
             val previousCount = keywords.size
+            val newCount = newList.size
             if (newList.isNotEmpty()) {
-                keywords.addAll(newList)
-                notifyItemRangeInserted(previousCount, newList.size)
-                keywords.removeAll(keywords.subList(0, previousCount))
-                notifyItemRangeRemoved(0, previousCount)
+                keywords = newList.toMutableList()
+                if (previousCount > newCount) {
+                    // in this case changeCount and insertStartPosition both equals the value of newCount
+                    notifyItemRangeChanged(0, newCount)
+                    val removedCount = previousCount - newCount
+                    notifyItemRangeRemoved(newCount, removedCount)
+                } else if (previousCount < newCount) {
+                    // in this case changeCount and insertStartPosition both equals the value of previousCount
+                    notifyItemRangeChanged(0, previousCount)
+                    val insertedCount = newCount - previousCount
+                    notifyItemRangeInserted(previousCount, insertedCount)
+                } else {
+                    notifyItemRangeChanged(0, previousCount)
+                }
             } else {
                 keywords.clear()
                 notifyItemRangeRemoved(0, previousCount)
