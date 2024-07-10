@@ -92,7 +92,7 @@ class MovieDetailsActivity : AppCompatActivity() {
     }
 
     private fun fillViewData() {
-        if (viewModel.isLoading.value == true) {
+        if (viewModel.isLoading.value == true || viewModel.details.value == null) {
             movie?.let {
                 _binding?.let { it2 ->
                     with(it2) {
