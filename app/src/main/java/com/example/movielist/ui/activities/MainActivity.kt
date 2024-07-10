@@ -201,15 +201,15 @@ class MainActivity : AppCompatActivity() {
             if (newList.isNotEmpty()) {
                 keywords = newList.toMutableList()
                 if (previousCount > newCount) {
-                    // in this case changeCount and insertStartPosition both equals the value of newCount
-                    notifyItemRangeChanged(0, newCount)
+                    // in this case changeCount and removeStartPosition both equals the value of newCount
+                    notifyItemRangeChanged(0, /*changeCount*/ newCount)
                     val removedCount = previousCount - newCount
-                    notifyItemRangeRemoved(newCount, removedCount)
+                    notifyItemRangeRemoved(/*removeStartPosition*/ newCount, removedCount)
                 } else if (previousCount < newCount) {
                     // in this case changeCount and insertStartPosition both equals the value of previousCount
-                    notifyItemRangeChanged(0, previousCount)
+                    notifyItemRangeChanged(0, /*changeCount*/ previousCount)
                     val insertedCount = newCount - previousCount
-                    notifyItemRangeInserted(previousCount, insertedCount)
+                    notifyItemRangeInserted(/*insertStartPosition*/ previousCount, insertedCount)
                 } else {
                     notifyItemRangeChanged(0, previousCount)
                 }
