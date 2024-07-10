@@ -58,7 +58,13 @@ class MovieDetailsActivity : AppCompatActivity() {
             .placeholder(R.drawable.image_placeholder)
             .into(binding.initialImage)
 
-        binding.imagesViewPager.adapter = MovieImagesPagerAdapter()
+        binding.imagesViewPager.adapter = MovieImagesPagerAdapter().apply {
+            onLoadedFirstImage = {
+                _binding?.let {
+                    it.initialImage.isVisible = false
+                }
+            }
+        }
     }
 
     override fun onEnterAnimationComplete() {
@@ -128,9 +134,6 @@ class MovieDetailsActivity : AppCompatActivity() {
     private fun onImagesLoaded(newList: List<MovieImage>) {
         (binding.imagesViewPager.adapter as? MovieImagesPagerAdapter)
             ?.submitList(newList)
-
-        if (newList.isNotEmpty())
-            binding.initialImage.isVisible = false
     }
 
     private fun collectErrors() {
