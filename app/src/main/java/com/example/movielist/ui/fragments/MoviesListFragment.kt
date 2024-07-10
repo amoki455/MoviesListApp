@@ -77,8 +77,7 @@ class MoviesListFragment : Fragment() {
                     columnsCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnsCount)
                 }
-                val items = viewModel.items.value?.toMutableList() ?: emptyList<Movie>().toMutableList()
-                adapter = MoviesRecyclerViewAdapter(items).apply {
+                adapter = MoviesRecyclerViewAdapter().apply {
                     onReachedLastItem = {
                         viewModel.loadNextPage()
                     }
@@ -100,35 +99,14 @@ class MoviesListFragment : Fragment() {
 
     private fun onItemsChanged(newItemsList: List<Movie>) {
         val adapter = binding.list.adapter as? MoviesRecyclerViewAdapter ?: return
-        var previousCount = adapter.items.size
-        var noResults = false
+        val oldListSize = adapter.itemCount
+        binding.noResultsText.isVisible = newItemsList.isEmpty() && oldListSize == 0
 
-        if (newItemsList.isNotEmpty()) {
-            // Remove loading item
-            if (adapter.items.lastOrNull()?.id == 0) {
-                adapter.items.removeLast()
-                adapter.notifyItemRemoved(previousCount - 1) // Last index
-                previousCount -= 1
-            }
-            if (newItemsList.size > previousCount) {
-                // Add new items
-                adapter.items = newItemsList.toMutableList()
-                adapter.items.add(Movie()) // Loading indicator item
-                val countInserted = newItemsList.size - previousCount + 1
-                // PreviousCount value is the start position of the new items
-                adapter.notifyItemRangeInserted(previousCount, countInserted)
-            }
-        } else if (previousCount > 0) {
-            // The new list is empty but the previous list has items, then the list has been cleared.
-            adapter.items.clear()
-            adapter.notifyItemRangeRemoved(0, previousCount)
-        } else {
-            // The new list is empty and No items in the previous,
-            // then this is the first request and it is empty then there is no result
-            noResults = true
+        val updatedList = newItemsList.toMutableList()
+        if (updatedList.size > oldListSize) {
+            updatedList.add(Movie()) // add loading indicator item
         }
-
-        binding.noResultsText.isVisible = noResults
+        adapter.submitList(updatedList)
     }
 
     private fun onItemsLoading(state: Boolean) {
@@ -138,7 +116,7 @@ class MoviesListFragment : Fragment() {
         } else {
             binding.noResultsText.isVisible = false
             // Show loading indicator only if there are no items, otherwise the last item in the list is treated as a loading item.
-            binding.loadingIndicator.isVisible = adapter?.items?.size == 0
+            binding.loadingIndicator.isVisible = adapter?.itemCount == 0
         }
     }
 

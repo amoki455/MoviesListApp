@@ -54,13 +54,11 @@ class MovieDetailsActivity : AppCompatActivity() {
         }
 
         Glide.with(binding.initialImage)
-            .load(ThisApp.createImageUrl(movie?.posterPath ?: "", 500))
+            .load(ThisApp.createImageUrl(movie?.posterPath ?: ""))
             .placeholder(R.drawable.image_placeholder)
             .into(binding.initialImage)
 
-        val images =
-            viewModel.images.value?.toMutableList() ?: emptyList<MovieImage>().toMutableList()
-        binding.imagesViewPager.adapter = MovieImagesPagerAdapter(images)
+        binding.imagesViewPager.adapter = MovieImagesPagerAdapter()
     }
 
     override fun onEnterAnimationComplete() {
@@ -128,30 +126,11 @@ class MovieDetailsActivity : AppCompatActivity() {
     }
 
     private fun onImagesLoaded(newList: List<MovieImage>) {
-        binding.initialImage.isVisible = newList.isEmpty()
-        (binding.imagesViewPager.adapter as? MovieImagesPagerAdapter)?.apply {
-            val previousCount = images.size
-            val newCount = newList.size
-            if (newList.isNotEmpty()) {
-                images = newList.toMutableList()
-                if (previousCount > newCount) {
-                    // in this case changeCount and removeStartPosition both equals the value of newCount
-                    notifyItemRangeChanged(0, /*changeCount*/ newCount)
-                    val removedCount = previousCount - newCount
-                    notifyItemRangeRemoved(/*removeStartPosition*/ newCount, removedCount)
-                } else if (previousCount < newCount) {
-                    // in this case changeCount and insertStartPosition both equals the value of previousCount
-                    notifyItemRangeChanged(0, /*changeCount*/ previousCount)
-                    val insertedCount = newCount - previousCount
-                    notifyItemRangeInserted(/*insertStartPosition*/ previousCount, insertedCount)
-                } else {
-                    notifyItemRangeChanged(0, previousCount)
-                }
-            } else {
-                images.clear()
-                notifyItemRangeRemoved(0, previousCount)
-            }
-        }
+        (binding.imagesViewPager.adapter as? MovieImagesPagerAdapter)
+            ?.submitList(newList)
+
+        if (newList.isNotEmpty())
+            binding.initialImage.isVisible = false
     }
 
     private fun collectErrors() {

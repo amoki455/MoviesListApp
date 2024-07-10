@@ -130,10 +130,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val keywords = searchViewModel.matchedKeywords.value?.toMutableList()
-            ?: emptyList<Keyword>().toMutableList()
         binding.keywordsList.adapter =
-            KeywordsRecyclerViewAdapter(keywords).apply {
+            KeywordsRecyclerViewAdapter().apply {
                 onItemClick = { k -> onSearchSuggestionClick(k) }
             }
 
@@ -194,30 +192,8 @@ class MainActivity : AppCompatActivity() {
         if (newList == null)
             return
 
-        val adapter = binding.keywordsList.adapter as? KeywordsRecyclerViewAdapter
-        adapter?.apply {
-            val previousCount = keywords.size
-            val newCount = newList.size
-            if (newList.isNotEmpty()) {
-                keywords = newList.toMutableList()
-                if (previousCount > newCount) {
-                    // in this case changeCount and removeStartPosition both equals the value of newCount
-                    notifyItemRangeChanged(0, /*changeCount*/ newCount)
-                    val removedCount = previousCount - newCount
-                    notifyItemRangeRemoved(/*removeStartPosition*/ newCount, removedCount)
-                } else if (previousCount < newCount) {
-                    // in this case changeCount and insertStartPosition both equals the value of previousCount
-                    notifyItemRangeChanged(0, /*changeCount*/ previousCount)
-                    val insertedCount = newCount - previousCount
-                    notifyItemRangeInserted(/*insertStartPosition*/ previousCount, insertedCount)
-                } else {
-                    notifyItemRangeChanged(0, previousCount)
-                }
-            } else {
-                keywords.clear()
-                notifyItemRangeRemoved(0, previousCount)
-            }
-        }
+        (binding.keywordsList.adapter as? KeywordsRecyclerViewAdapter)
+            ?.submitList(newList)
     }
 
     private fun onSearchSuggestionClick(keyword: Keyword): Boolean {

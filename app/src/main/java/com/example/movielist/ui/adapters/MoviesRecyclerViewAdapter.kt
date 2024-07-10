@@ -4,6 +4,8 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import com.bumptech.glide.Glide
 import com.example.movielist.R
 import com.example.movielist.ThisApp
@@ -11,9 +13,11 @@ import com.example.movielist.data.models.Movie
 import com.example.movielist.databinding.MovieBinding
 
 
-class MoviesRecyclerViewAdapter(
-    var items: MutableList<Movie>
-) : RecyclerView.Adapter<MoviesRecyclerViewAdapter.ViewHolder>() {
+class MoviesRecyclerViewAdapter : ListAdapter<Movie, MoviesRecyclerViewAdapter.ViewHolder>(object :
+    DiffUtil.ItemCallback<Movie>() {
+    override fun areItemsTheSame(oldItem: Movie, newItem: Movie): Boolean = oldItem.id == newItem.id
+    override fun areContentsTheSame(oldItem: Movie, newItem: Movie): Boolean = oldItem == newItem
+}) {
 
     var onReachedLastItem: () -> Unit = {}
     var onItemClick: (item: Movie) -> Unit = {}
@@ -33,11 +37,11 @@ class MoviesRecyclerViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (items[position].id == 0) 2 else 1
+        return if (getItem(position).id == 0) 2 else 1
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
+        val item = getItem(position)
 
         holder.binding?.apply {
             root.setOnClickListener { onItemClick(item) }
@@ -55,8 +59,6 @@ class MoviesRecyclerViewAdapter(
             onReachedLastItem()
         }
     }
-
-    override fun getItemCount(): Int = items.size
 
     inner class ViewHolder(view: View, val binding: MovieBinding?) :
         RecyclerView.ViewHolder(view)
