@@ -79,20 +79,24 @@ class MovieDetailsActivity : AppCompatActivity() {
         // delay TabLayoutMediator because it causes animation lag when there is large number of images
         CoroutineScope(Dispatchers.Main).launch {
             delay(500)
-            TabLayoutMediator(binding.tabLayout, binding.imagesViewPager) { tab, _ ->
-                tab.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_circle, null)
-            }.attach()
+            _binding?.let {
+                TabLayoutMediator(it.tabLayout, it.imagesViewPager) { tab, _ ->
+                    tab.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_circle, null)
+                }.attach()
+            }
         }
     }
 
     private fun fillViewData() {
         if (viewModel.isLoading.value == true) {
             movie?.let {
-                with(binding) {
-                    title.text = it.title
-                    overview.text = it.overview
-                    releaseDate.text = it.releaseData
-                    averageVote.text = it.voteAverage.toString()
+                _binding?.let { it2 ->
+                    with(it2) {
+                        title.text = it.title
+                        overview.text = it.overview
+                        releaseDate.text = it.releaseData
+                        averageVote.text = it.voteAverage.toString()
+                    }
                 }
             }
         }
