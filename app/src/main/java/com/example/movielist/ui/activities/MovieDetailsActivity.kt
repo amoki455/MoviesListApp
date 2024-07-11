@@ -15,6 +15,7 @@ import com.example.movielist.data.models.Movie
 import com.example.movielist.data.models.MovieDetails
 import com.example.movielist.data.models.MovieImage
 import com.example.movielist.databinding.ActivityMovieDetailsBinding
+import com.example.movielist.databinding.GenreChipBinding
 import com.example.movielist.ui.adapters.MovieImagesPagerAdapter
 import com.example.movielist.ui.viewmodels.ErrorType
 import com.example.movielist.ui.viewmodels.MovieDetailsActivityViewModel
@@ -129,11 +130,26 @@ class MovieDetailsActivity : AppCompatActivity() {
         binding.overview.text = details.overview
         binding.budget.text = details.budget.toString()
         binding.revenue.text = details.revenue.toString()
+        addGenresToView(details)
     }
 
     private fun onImagesLoaded(newList: List<MovieImage>) {
         (binding.imagesViewPager.adapter as? MovieImagesPagerAdapter)
             ?.submitList(newList)
+    }
+
+    private fun addGenresToView(details: MovieDetails) {
+        _binding?.let {
+            details.genres?.forEach { genre ->
+                val chip = GenreChipBinding.inflate(LayoutInflater.from(this)).root
+                with(chip) {
+                    text = genre.name
+                    id = View.generateViewId()
+                }
+                it.genresLayout.addView(chip)
+                it.genresFlow.addView(chip)
+            }
+        }
     }
 
     private fun collectErrors() {

@@ -18,4 +18,5 @@
     <string name="revenue">Revenue</string>
     <string name="budget">Budget</string>
     <string name="search_keywords_info">Search results for keywords: %s</string>
+    <string name="genres">Genres</string>
 </resources>
